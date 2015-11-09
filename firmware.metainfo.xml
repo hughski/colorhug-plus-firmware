@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2015 Richard Hughes <richard@hughsie.com> -->
+<component type="firmware">
+  <id>com.hughski.ColorHug+.firmware</id>
+  <name>ColorHug+ Device Update</name>
+  <summary>Firmware for the Hughski ColorHug+ Colorimeter</summary>
+  <description>
+    <p>
+      Updating the firmware on your ColorHug+ device improves performance and
+      adds new features.
+    </p>
+  </description>
+  <provides>
+    <firmware type="flashed">2082b5e0-7a64-478a-b1b2-e3404fab6dad</firmware>
+  </provides>
+  <url type="homepage">http://www.hughski.com/</url>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <updatecontact>richard_at_hughsie.com</updatecontact>
+  <developer_name>Hughski Limited</developer_name>
+  <releases>
+    <release urgency="medium" version="1.0" timestamp="1410515610">
+      <checksum target="content" filename="firmware.dfu"/>
+      <description>
+        <p>Initial firmware release.</p>
+      </description>
+    </release>
+  </releases>
+</component>
