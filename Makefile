@@ -21,7 +21,7 @@
 
 VENDOR		= hughski
 PROJECT_NAME	= colorhug+
-VERSION		= 1.0
+VERSION		= 0.1
 
 PK2CMD_DIR 	= ../../pk2cmd/pk2cmd
 CC		= /opt/microchip/xc8/v1.34/bin/xc8

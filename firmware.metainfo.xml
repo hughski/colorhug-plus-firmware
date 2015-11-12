@@ -3,7 +3,7 @@
 <component type="firmware">
   <id>com.hughski.ColorHug+.firmware</id>
   <name>ColorHug+ Device Update</name>
-  <summary>Firmware for the Hughski ColorHug+ Colorimeter</summary>
+  <summary>Firmware for the Hughski ColorHug+ Spectrometer</summary>
   <description>
     <p>
       Updating the firmware on your ColorHug+ device improves performance and
@@ -11,7 +11,8 @@
     </p>
   </description>
   <provides>
-    <firmware type="flashed">2082b5e0-7a64-478a-b1b2-e3404fab6dad</firmware>
+    <firmware type="flashed">7500fee3-9362-8ba3-1534-7287e8a69cee</firmware> <!-- F/W -->
+    <firmware type="flashed">dc340bdf-495f-24a8-07f1-c3a27d1280a7</firmware> <!-- DFU -->
   </provides>
   <url type="homepage">http://www.hughski.com/</url>
   <metadata_license>CC0-1.0</metadata_license>
@@ -19,10 +20,10 @@
   <updatecontact>richard_at_hughsie.com</updatecontact>
   <developer_name>Hughski Limited</developer_name>
   <releases>
-    <release urgency="medium" version="1.0" timestamp="1410515610">
+    <release urgency="medium" version="0.1" timestamp="1447353015">
       <checksum target="content" filename="firmware.dfu"/>
       <description>
-        <p>Initial firmware release.</p>
+        <p>Test firmware release.</p>
       </description>
     </release>
   </releases>

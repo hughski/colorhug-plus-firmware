@@ -47,7 +47,7 @@ const struct device_descriptor chug_device_descriptor =
 	0x00,					/* Protocol */
 	EP_0_LEN,				/* bMaxPacketSize0 */
 	0x273f,					/* VID */
-	0x1005,					/* PID */
+	0x1003,					/* PID */
 	0x0001,					/* firmware version */
 	1,					/* Manufacturer string index */
 	2,					/* Product string index */
