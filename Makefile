@@ -112,7 +112,7 @@ firmware.hex: Makefile ${SRC_FIRMWARE_C} ${SRC_FIRMWARE_H}
 firmware.dfu: firmware.hex Makefile
 	${DFU_TOOL} convert $< $@ 273f 1004 ffff 8000
 install: firmware.dfu Makefile
-	${DFU_TOOL} -R --alt 0 --download $< --verbose
+	${DFU_TOOL} --reset --alt 0 download $<
 
 # LVFS package
 CAB_FILES=							\
