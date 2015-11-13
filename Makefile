@@ -65,6 +65,7 @@ SRC_BOOTLOADER_H =						\
 	ch-errno.h						\
 	ch-flash.h						\
 	ch-sram.c						\
+	usb_config.h						\
 	usb_config_bootloader.h
 SRC_BOOTLOADER_C =						\
 	bootloader.c						\
@@ -74,6 +75,7 @@ SRC_BOOTLOADER_C =						\
 	ch-sram.c						\
 	m-stack/usb/src/usb.c					\
 	m-stack/usb/src/usb_dfu.c				\
+	m-stack/usb/src/usb_winusb.c				\
 	usb_descriptors_bootloader.c
 bootloader_CFLAGS =						\
 	${CFLAGS}						\
@@ -92,6 +94,7 @@ SRC_FIRMWARE_H =						\
 	ch-errno.h						\
 	ch-flash.h						\
 	ch-sram.c						\
+	usb_config.h						\
 	usb_config_firmware.h
 SRC_FIRMWARE_C =						\
 	ch-config.c						\
@@ -102,6 +105,7 @@ SRC_FIRMWARE_C =						\
 	m-stack/usb/src/usb.c					\
 	m-stack/usb/src/usb_dfu.c				\
 	m-stack/usb/src/usb_hid.c				\
+	m-stack/usb/src/usb_winusb.c				\
 	usb_descriptors_firmware.c
 firmware_CFLAGS =						\
 	--codeoffset=0x4000					\
@@ -110,7 +114,7 @@ firmware_CFLAGS =						\
 firmware.hex: Makefile ${SRC_FIRMWARE_C} ${SRC_FIRMWARE_H}
 	$(CC) $(firmware_CFLAGS) ${SRC_FIRMWARE_C} -o$@
 firmware.dfu: firmware.hex Makefile
-	${DFU_TOOL} convert $< $@ 273f 1004 ffff 8000
+	${DFU_TOOL} convert dfu $< $@ 273f 1004 ffff 8000
 install: firmware.dfu Makefile
 	${DFU_TOOL} --reset --alt 0 download $<
 

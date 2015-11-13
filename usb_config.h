@@ -22,6 +22,10 @@
 #ifndef __USB_CONFIG_H
 #define __USB_CONFIG_H
 
+/* automatically send the descriptors to bind the WinUSB driver on Windows */
+#define AUTOMATIC_WINUSB_SUPPORT
+#define MICROSOFT_OS_DESC_VENDOR_CODE 0x50
+
 #ifdef COLORHUG_BOOTLOADER
  #include "usb_config_bootloader.h"
 #else
