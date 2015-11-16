@@ -117,7 +117,10 @@ static const struct configuration_1_packet configuration_1 =
 	/* DFU Functional Descriptor (runtime) */
 	sizeof(struct dfu_functional_descriptor),
 	DESC_DFU_FUNCTIONAL_DESCRIPTOR,		/* bDescriptorType */
-	0,					/* bmAttributes */
+	DFU_ATTRIBUTE_CAN_UPLOAD |
+	DFU_ATTRIBUTE_CAN_DOWNLOAD |
+	DFU_ATTRIBUTE_WILL_DETACH |
+	DFU_ATTRIBUTE_MANIFESTATON_TOLERANT,	/* bmAttributes */
 	0x00,					/* wDetachTimeOut (ms) */
 	0x64,					/* wTransferSize */
 	0x0101,					/* bcdDFUVersion */
