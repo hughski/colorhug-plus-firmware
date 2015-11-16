@@ -19,16 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __USB_CONFIG_FIRMWARE_H
-#define __USB_CONFIG_FIRMWARE_H
+#ifndef __USB_CONFIG_H
+#define __USB_CONFIG_H
 
 /* number of endpoint numbers besides endpoint zero */
-#define NUM_ENDPOINT_NUMBERS		1
+#define NUM_ENDPOINT_NUMBERS		0
 
 /* size of endpoint */
 #define EP_0_LEN			8
-#define EP_1_OUT_LEN			8
-#define EP_1_IN_LEN			8
 
 /* only one USB config */
 #define NUMBER_OF_CONFIGURATIONS	1
@@ -48,16 +46,16 @@
 #define UNKNOWN_SETUP_REQUEST_CALLBACK	chug_unknown_setup_request_callback
 #define USB_RESET_CALLBACK		chug_usb_reset_callback
 
-/* HID configuration functions */
-#define USB_HID_DESCRIPTOR_FUNC		usb_application_get_hid_descriptor
-#define USB_HID_REPORT_DESCRIPTOR_FUNC	usb_application_get_hid_report_descriptor
-
 /* DFU configuration functions */
 #define USB_DFU_USE_RUNTIME
 #define DFU_TRANSFER_SIZE		64	/* bytes */
 #define USB_DFU_SUCCESS_FUNC		chug_usb_dfu_set_success_callback
 
-/* we expose HID _and_ DFU classes */
+/* we expose CHUG _and_ DFU classes */
 #define MULTI_CLASS_DEVICE
 
-#endif /* __USB_CONFIG_FIRMWARE_H */
+/* automatically send the descriptors to bind the WinUSB driver on Windows */
+#define AUTOMATIC_WINUSB_SUPPORT
+#define MICROSOFT_OS_DESC_VENDOR_CODE 0x50
+
+#endif /* __USB_CONFIG_H */

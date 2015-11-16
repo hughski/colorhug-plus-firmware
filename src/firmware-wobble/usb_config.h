@@ -22,14 +22,46 @@
 #ifndef __USB_CONFIG_H
 #define __USB_CONFIG_H
 
+/* number of endpoint numbers besides endpoint zero */
+#define NUM_ENDPOINT_NUMBERS		1
+
+/* size of endpoint */
+#define EP_0_LEN			8
+#define EP_1_OUT_LEN			8
+#define EP_1_IN_LEN			8
+
+/* only one USB config */
+#define NUMBER_OF_CONFIGURATIONS	1
+
+/* ping-pong buffering mode */
+#define PPB_MODE PPB_NONE
+
+/* no need to use usb_service() */
+//#define USB_USE_INTERRUPTS
+
+/* objects from usb_descriptors.c */
+#define USB_DEVICE_DESCRIPTOR		chug_device_descriptor
+#define USB_CONFIG_DESCRIPTOR_MAP	usb_application_config_descs
+#define USB_STRING_DESCRIPTOR_FUNC	usb_application_get_string
+
+/* optional callbacks */
+#define UNKNOWN_SETUP_REQUEST_CALLBACK	chug_unknown_setup_request_callback
+#define USB_RESET_CALLBACK		chug_usb_reset_callback
+
+/* HID configuration functions */
+#define USB_HID_DESCRIPTOR_FUNC		usb_application_get_hid_descriptor
+#define USB_HID_REPORT_DESCRIPTOR_FUNC	usb_application_get_hid_report_descriptor
+
+/* DFU configuration functions */
+#define USB_DFU_USE_RUNTIME
+#define DFU_TRANSFER_SIZE		64	/* bytes */
+#define USB_DFU_SUCCESS_FUNC		chug_usb_dfu_set_success_callback
+
+/* we expose HID _and_ DFU classes */
+#define MULTI_CLASS_DEVICE
+
 /* automatically send the descriptors to bind the WinUSB driver on Windows */
 #define AUTOMATIC_WINUSB_SUPPORT
 #define MICROSOFT_OS_DESC_VENDOR_CODE 0x50
-
-#ifdef COLORHUG_BOOTLOADER
- #include "usb_config_bootloader.h"
-#else
- #include "usb_config_firmware.h"
-#endif
 
 #endif /* __USB_CONFIG_H */
