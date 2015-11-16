@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <config.h>
+
 #include "usb_config.h"
 #include "usb.h"
 #include "usb_ch9.h"
@@ -48,7 +50,7 @@ const struct device_descriptor chug_device_descriptor =
 	EP_0_LEN,				/* bMaxPacketSize0 */
 	0x273f,					/* VID */
 	0x1002,					/* PID */
-	0x0001,					/* firmware version */
+	FWVER_MAJOR * 0x100 + FWVER_MINOR,	/* firmware version */
 	1,					/* Manufacturer string index */
 	2,					/* Product string index */
 	0,					/* Serial string index */

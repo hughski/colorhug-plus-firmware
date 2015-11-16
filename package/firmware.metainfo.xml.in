@@ -11,8 +11,8 @@
     </p>
   </description>
   <provides>
-    <firmware type="flashed">7500fee3-9362-8ba3-1534-7287e8a69cee</firmware> <!-- F/W -->
-    <firmware type="flashed">dc340bdf-495f-24a8-07f1-c3a27d1280a7</firmware> <!-- DFU -->
+    <firmware type="flashed">fd9f37b4-36fb-5245-86a8-4d5993bb153b</firmware> <!-- F/W -->
+    <firmware type="flashed">ad61e89a-d158-5892-9540-2e7df47f17be</firmware> <!-- DFU -->
   </provides>
   <url type="homepage">http://www.hughski.com/</url>
   <metadata_license>CC0-1.0</metadata_license>
@@ -20,10 +20,10 @@
   <updatecontact>richard_at_hughsie.com</updatecontact>
   <developer_name>Hughski Limited</developer_name>
   <releases>
-    <release urgency="medium" version="0.1" timestamp="1447353015">
+    <release urgency="medium" version="@VERSION@" timestamp="1447353015">
       <checksum target="content" filename="firmware.dfu"/>
       <description>
-        <p>Test firmware release.</p>
+        <p>Latest firmware release.</p>
       </description>
     </release>
   </releases>

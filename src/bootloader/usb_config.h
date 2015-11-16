@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __USB_CONFIG_BOOTLOADER_H
-#define __USB_CONFIG_BOOTLOADER_H
+#ifndef __USB_CONFIG_H
+#define __USB_CONFIG_H
 
 /* number of endpoint numbers besides endpoint zero */
 #define NUM_ENDPOINT_NUMBERS		0
@@ -54,4 +54,8 @@
 #define USB_DFU_READ_FUNC		chug_usb_dfu_read_callback
 #define USB_DFU_WRITE_FUNC		chug_usb_dfu_write_callback
 
-#endif /* __USB_CONFIG_BOOTLOADER_H */
+/* automatically send the descriptors to bind the WinUSB driver on Windows */
+#define AUTOMATIC_WINUSB_SUPPORT
+#define MICROSOFT_OS_DESC_VENDOR_CODE 0x50
+
+#endif /* __USB_CONFIG_H */

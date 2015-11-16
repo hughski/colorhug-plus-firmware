@@ -19,21 +19,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <config.h>
+
 #include "usb_config.h"
 #include "usb.h"
 #include "usb_ch9.h"
-#include "usb_hid.h"
 #include "usb_dfu.h"
 
 /* Configuration Packet */
 struct configuration_1_packet {
 	struct configuration_descriptor		config;
-	struct interface_descriptor		interface_eeprom;
-	struct dfu_functional_descriptor	dfu_eeprom;
-#ifdef DEVICE_IS_COLORHUG2
-	struct interface_descriptor		interface_sram;
-	struct dfu_functional_descriptor	dfu_sram;
-#endif
+	struct interface_descriptor		interface;
+	struct interface_descriptor		interface_dfu;
+	struct dfu_functional_descriptor	dfu_runtime;
 };
 
 /* Device Descriptor */
@@ -47,8 +45,8 @@ const struct device_descriptor chug_device_descriptor =
 	0x00,					/* Protocol */
 	EP_0_LEN,				/* bMaxPacketSize0 */
 	0x273f,					/* VID */
-	0x1003,					/* PID */
-	0x0001,					/* firmware version */
+	0x1002,					/* PID */
+	FWVER_MAJOR * 0x100 + FWVER_MINOR,	/* firmware version */
 	1,					/* Manufacturer string index */
 	2,					/* Product string index */
 	0,					/* Serial string index */
@@ -63,60 +61,52 @@ static const struct configuration_1_packet configuration_1 =
 	sizeof(struct configuration_descriptor),
 	DESC_CONFIGURATION,
 	sizeof(configuration_1),
-	0x01,					/* bNumInterfaces */
+	0x02,					/* bNumInterfaces */
 	0x01,					/* bConfigurationValue */
-	0x00,					/* iConfiguration */
+	0x02,					/* iConfiguration */
 	0b10000000,
-	150,					/* 300mA */
+	100/2,					/* 100/2 indicates 100mA */
 	},
+
 	{
-	/* DFU Runtime Descriptor (for EEPROM) */
+	/* CHUG Descriptor */
 	sizeof(struct interface_descriptor),
 	DESC_INTERFACE,
 	0x00,					/* InterfaceNumber */
 	0x00,					/* AlternateSetting */
 	0x00,					/* bNumEndpoints (num besides endpoint 0) */
+	0xff,					/* bInterfaceClass */
+	0xde,					/* bInterfaceSubclass */
+	0xad,					/* bInterfaceProtocol */
+	0x00,					/* iInterface */
+	},
+
+	{
+	/* DFU Runtime Descriptor (runtime) */
+	sizeof(struct interface_descriptor),
+	DESC_INTERFACE,
+	0x01,					/* InterfaceNumber */
+	0x00,					/* AlternateSetting */
+	0x00,					/* bNumEndpoints (num besides endpoint 0) */
 	DFU_INTERFACE_CLASS,			/* bInterfaceClass */
 	DFU_INTERFACE_SUBCLASS,			/* bInterfaceSubclass */
-	DFU_INTERFACE_PROTOCOL_DFU,		/* bInterfaceProtocol */
-	0x04,					/* iInterface */
+	DFU_INTERFACE_PROTOCOL_RUNTIME,		/* bInterfaceProtocol */
+	0x00,					/* iInterface */
 	},
+
 	{
-	/* DFU Functional Descriptor (for EEPROM) */
+	/* DFU Functional Descriptor (runtime) */
 	sizeof(struct dfu_functional_descriptor),
 	DESC_DFU_FUNCTIONAL_DESCRIPTOR,		/* bDescriptorType */
 	DFU_ATTRIBUTE_CAN_UPLOAD |
 	DFU_ATTRIBUTE_CAN_DOWNLOAD |
 	DFU_ATTRIBUTE_WILL_DETACH |
 	DFU_ATTRIBUTE_MANIFESTATON_TOLERANT,	/* bmAttributes */
-	0x64,					/* wDetachTimeOut (ms) */
-	DFU_TRANSFER_SIZE,			/* wTransferSize */
+	0x00,					/* wDetachTimeOut (ms) */
+	0x64,					/* wTransferSize */
 	0x0101,					/* bcdDFUVersion */
 	},
-#ifdef DEVICE_IS_COLORHUG2
-	{
-	/* DFU Runtime Descriptor (for SRAM) */
-	sizeof(struct interface_descriptor),
-	DESC_INTERFACE,
-	0x00,					/* InterfaceNumber */
-	0x01,					/* AlternateSetting */
-	0x00,					/* bNumEndpoints (num besides endpoint 0) */
-	DFU_INTERFACE_CLASS,			/* bInterfaceClass */
-	DFU_INTERFACE_SUBCLASS,			/* bInterfaceSubclass */
-	DFU_INTERFACE_PROTOCOL_DFU,		/* bInterfaceProtocol */
-	0x05,					/* iInterface */
-	},
-	{
-	/* DFU Functional Descriptor (for SRAM) */
-	sizeof(struct dfu_functional_descriptor),
-	DESC_DFU_FUNCTIONAL_DESCRIPTOR,		/* bDescriptorType */
-	DFU_ATTRIBUTE_CAN_UPLOAD |
-	DFU_ATTRIBUTE_CAN_DOWNLOAD,		/* bmAttributes */
-	0x64,					/* wDetachTimeOut (ms) */
-	DFU_TRANSFER_SIZE,			/* wTransferSize */
-	0x0101,					/* bcdDFUVersion */
-	},
-#endif
+
 };
 
 /* String Descriptors */
@@ -130,27 +120,14 @@ static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[12]
 	DESC_STRING,
 	{'H','u','g','h','s','k','i',' ','L','t','d','.'}
 };
-static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[15]; } product_string = {
+static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[9]; } product_string = {
 	sizeof(product_string),
 	DESC_STRING,
-	{'C','o','l','o','r','H','u','g','+',' ','[','D','F','U',']'}
+	{'C','o','l','o','r','H','u','g','+'}
 };
-static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[6]; } interface_eeprom_string = {
-	sizeof(interface_eeprom_string),
-	DESC_STRING,
-	{'e','e','p','r','o','m'}
-};
-#ifdef DEVICE_IS_COLORHUG2
-static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[4]; } interface_sram_string = {
-	sizeof(interface_sram_string),
-	DESC_STRING,
-	{'s','r','a','m'}
-};
-#endif
 
 /* Get String function */
-int16_t
-usb_application_get_string(uint8_t string_number, const void **ptr)
+int16_t usb_application_get_string(uint8_t string_number, const void **ptr)
 {
 	if (string_number == 0) {
 		*ptr = &str00;
@@ -164,14 +141,6 @@ usb_application_get_string(uint8_t string_number, const void **ptr)
 	} else if (string_number == 3) {
 		/* FIXME: read a serial number out of EEPROM */
 		return -1;
-	} else if (string_number == 4) {
-		*ptr = &interface_eeprom_string;
-		return sizeof(interface_eeprom_string);
-#ifdef DEVICE_IS_COLORHUG2
-	} else if (string_number == 5) {
-		*ptr = &interface_sram_string;
-		return sizeof(interface_sram_string);
-#endif
 	}
 
 	return -1;
