@@ -37,7 +37,7 @@
 #pragma config XINST	= OFF		/* turn off extended instruction set */
 #pragma config STVREN	= ON		/* Stack overflow reset */
 #pragma config WDTEN	= ON		/* Watch Dog Timer (WDT) */
-#pragma config CP0	= OFF		/* Code protect */
+#pragma config CP0	= ON		/* Code protect */
 #pragma config OSC	= HSPLL		/* HS oscillator, PLL enabled, HSPLL used by USB */
 #pragma config IESO	= OFF		/* Internal External (clock) Switchover */
 #pragma config FCMEN	= ON		/* Fail Safe Clock Monitor */
@@ -53,7 +53,7 @@
 #pragma config MSSP7B_EN = MSK7		/* 7 Bit address masking */
 #pragma config WPFP	= PAGE_1	/* Write Protect Program Flash Page 0 */
 #pragma config WPEND	= PAGE_0	/* Write/Erase protect Flash Memory pages */
-#pragma config WPCFG	= OFF		/* Write/Erase Protection of last page Disabled */
+#pragma config WPCFG	= ON		/* Write/Erase Protection of last page */
 #pragma config WPDIS	= OFF		/* Write Protect Disable */
 #ifdef DEVICE_IS_COLORHUG2
 #pragma config PLLDIV	= 6		/* (24 MHz crystal used on this board) */
