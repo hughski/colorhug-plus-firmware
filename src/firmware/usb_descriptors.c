@@ -26,6 +26,8 @@
 #include "usb_ch9.h"
 #include "usb_dfu.h"
 
+#include "ch-config.h"
+
 /* Configuration Packet */
 struct configuration_1_packet {
 	struct configuration_descriptor		config;
@@ -49,7 +51,7 @@ const struct device_descriptor chug_device_descriptor =
 	FWVER_MAJOR * 0x100 + FWVER_MINOR,	/* firmware version */
 	1,					/* Manufacturer string index */
 	2,					/* Product string index */
-	0,					/* Serial string index */
+	3,					/* Serial string index */
 	NUMBER_OF_CONFIGURATIONS
 };
 
@@ -126,6 +128,9 @@ static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[9];
 	{'C','o','l','o','r','H','u','g','+'}
 };
 
+/* this is good enough for a *lot* of devices :) */
+#define SERIAL_MAX_LEN		8
+
 /* Get String function */
 int16_t usb_application_get_string(uint8_t string_number, const void **ptr)
 {
@@ -139,8 +144,27 @@ int16_t usb_application_get_string(uint8_t string_number, const void **ptr)
 		*ptr = &product_string;
 		return sizeof(product_string);
 	} else if (string_number == 3) {
-		/* FIXME: read a serial number out of EEPROM */
-		return -1;
+		static struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[SERIAL_MAX_LEN]; } serial = {
+			sizeof(serial),
+			DESC_STRING,
+			{'0','0','0','0','0','0','0','0'}
+		};
+		CHugConfig cfg;
+		uint8_t i;
+		uint32_t tmp;
+
+		/* read a serial number from the config block */
+		chug_config_read(&cfg);
+		tmp = cfg.serial_number;
+
+		/* poor mans asprintf */
+		for (i = 0; i < SERIAL_MAX_LEN; i++) {
+			serial.chars[SERIAL_MAX_LEN - (i + 1)] = '0' + tmp % 10;
+			tmp /= 10;
+		}
+
+		*ptr = &serial;
+		return sizeof(serial);
 	}
 
 	return -1;
