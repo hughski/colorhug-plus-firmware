@@ -57,7 +57,7 @@ CFLAGS  +=							\
 verify.hex: Makefile bootloader.hex firmware.hex
 	${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -GF $@ -b ${PK2CMD_DIR}/ -r
 verify.dfu: verify.hex Makefile
-	${DFU_TOOL} convert $< $@ 273f 1004 ffff 8000
+	${DFU_TOOL} convert dfu $< $@ 8000
 
 # bootloader
 SRC_BOOTLOADER_H =						\
@@ -84,7 +84,7 @@ bootloader_CFLAGS =						\
 bootloader.hex: Makefile ${SRC_BOOTLOADER_C} ${SRC_BOOTLOADER_H}
 	$(CC) $(bootloader_CFLAGS) ${SRC_BOOTLOADER_C} -o$@
 bootloader.dfu: bootloader.hex
-	${DFU_TOOL} convert $< $@ 273f 1004 ffff 8000
+	${DFU_TOOL} convert $< $@ 8000
 install-bootloader: bootloader.hex
 	${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -f $< -b ${PK2CMD_DIR}/ -m -r
 
@@ -114,9 +114,11 @@ firmware_CFLAGS =						\
 firmware.hex: Makefile ${SRC_FIRMWARE_C} ${SRC_FIRMWARE_H}
 	$(CC) $(firmware_CFLAGS) ${SRC_FIRMWARE_C} -o$@
 firmware.dfu: firmware.hex Makefile
-	${DFU_TOOL} convert dfu $< $@ 273f 1004 ffff 8000
+	${DFU_TOOL} convert dfu $< $@ 8000
+	${DFU_TOOL} set-vendor $@ 273f
+	${DFU_TOOL} set-product $@ 1002
 install: firmware.dfu Makefile
-	${DFU_TOOL} --reset --alt 0 download $<
+	${DFU_TOOL} --reset download $<
 
 # LVFS package
 CAB_FILES=							\
