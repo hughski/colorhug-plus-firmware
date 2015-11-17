@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,27 +19,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CH_ERRNO_H
-#define __CH_ERRNO_H
+#ifndef __MTI_TCN75A_H
+#define __MTI_TCN75A_H
 
-#include <xc.h>
+#include <stdint.h>
 
 typedef enum {
-	CHUG_ERRNO_NONE			= 0,	/* same as DFU */
-	CHUG_ERRNO_ADDRESS		= 8,	/* same as DFU */
-	CHUG_ERRNO_NO_FIRMWARE		= 10,	/* same as DFU */
-	CHUG_ERRNO_UNKNOWN		= 14,	/* same as DFU */
-	CHUG_ERRNO_SELF_TEST_SRAM	= 16,
-	CHUG_ERRNO_SELF_TEST_EEPROM	= 17,
-	CHUG_ERRNO_I2C_ADDRESS		= 18,
-	CHUG_ERRNO_I2C_CONFIG		= 19,
-	CHUG_ERRNO_LAST
-} CHugErrno;
+	MTI_TCN75A_RESOLUTION_1_2C,
+	MTI_TCN75A_RESOLUTION_1_4C,
+	MTI_TCN75A_RESOLUTION_1_8C,
+	MTI_TCN75A_RESOLUTION_1_16C
+} MtiTcn75aResolution;
 
-#define LED_RED				0x02
-#define LED_GREEN			0x01
+uint8_t	 mti_tcn75a_set_resolution	(MtiTcn75aResolution	 resolution);
+uint8_t	 mti_tcn75a_get_temperature	(uint16_t		*result);
 
-void		 chug_errno_show	(CHugErrno	 errno,
-					 uint8_t	 is_fatal);
-
-#endif /* __CH_ERRNO_H */
+#endif /* __MTI_TCN75A_H */

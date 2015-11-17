@@ -24,17 +24,19 @@ SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
 	$(top_srcdir)/src/ch-errno.h				\
 	$(top_srcdir)/src/ch-flash.h				\
-	$(top_srcdir)/src/ch-sram.h				\
+	$(srcdir)/mti_23k640.h					\
+	$(srcdir)/mti_tcn75a.h					\
 	$(srcdir)/usb_config.h
 SRC_C =								\
 	$(top_srcdir)/src/ch-config.c				\
 	$(top_srcdir)/src/ch-errno.c				\
 	$(top_srcdir)/src/ch-flash.c				\
-	$(top_srcdir)/src/ch-sram.c				\
 	$(top_srcdir)/src/m-stack/usb/src/usb.c			\
 	$(top_srcdir)/src/m-stack/usb/src/usb_dfu.c		\
 	$(top_srcdir)/src/m-stack/usb/src/usb_winusb.c		\
 	$(srcdir)/firmware.c					\
+	$(srcdir)/mti_23k640.c					\
+	$(srcdir)/mti_tcn75a.c					\
 	$(srcdir)/usb_descriptors.c
 firmware_CFLAGS =						\
 	-I$(srcdir)						\
@@ -71,6 +73,10 @@ CLEANFILES =							\
 
 EXTRA_DIST =							\
 	firmware.c						\
+	mti_23k640.c						\
+	mti_23k640.h						\
+	mti_tcn75a.c						\
+	mti_tcn75a.h						\
 	usb_config.h						\
 	usb_descriptors.c
 

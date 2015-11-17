@@ -19,36 +19,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CH_SRAM_H
-#define __CH_SRAM_H
+#ifndef __MTI_23K640_H
+#define __MTI_23K640_H
 
 #include <xc.h>
 #include <stdint.h>
 
-int8_t		 chug_sram_self_test		(void);
-void		 chug_sram_write_byte		(uint16_t	 address,
+int8_t		 mti_23k640_self_test		(void);
+void		 mti_23k640_write_byte		(uint16_t	 addr,
 						 uint8_t	 data);
-uint8_t		 chug_sram_read_byte		(uint16_t	 address);
+uint8_t		 mti_23k640_read_byte		(uint16_t	 addr);
 
-void		 chug_sram_dma_wait		(void);
-void		 chug_sram_wipe			(uint16_t	 address,
+void		 mti_23k640_dma_wait		(void);
+void		 mti_23k640_wipe		(uint16_t	 addr,
 						 uint16_t	 length);
-uint8_t		 chug_sram_dma_check		(void);
+uint8_t		 mti_23k640_dma_check		(void);
 
-void		 chug_sram_dma_from_cpu_prep	(void);
-void		 chug_sram_dma_from_cpu_exec	(const uint8_t	*address_cpu,
-						 uint16_t	 address_ram,
+void		 mti_23k640_dma_from_cpu_prep	(void);
+void		 mti_23k640_dma_from_cpu_exec	(const uint8_t	*addr_cpu,
+						 uint16_t	 addr_ram,
 						 uint16_t	 length);
-void		 chug_sram_dma_from_cpu		(const uint8_t	*address_cpu,
-						 uint16_t	 address_ram,
-						 uint16_t	 length);
-
-void		 chug_sram_dma_to_cpu_prep	(void);
-void		 chug_sram_dma_to_cpu_exec	(uint16_t	 address_ram,
-						 uint8_t	*address_cpu,
-						 uint16_t	 length);
-void		 chug_sram_dma_to_cpu		(uint16_t	 address_ram,
-						 uint8_t	*address_cpu,
+void		 mti_23k640_dma_from_cpu	(const uint8_t	*addr_cpu,
+						 uint16_t	 addr_ram,
 						 uint16_t	 length);
 
-#endif /* __CH_SRAM_H */
+void		 mti_23k640_dma_to_cpu_prep	(void);
+void		 mti_23k640_dma_to_cpu_exec	(uint16_t	 addr_ram,
+						 uint8_t	*addr_cpu,
+						 uint16_t	 length);
+void		 mti_23k640_dma_to_cpu		(uint16_t	 addr_ram,
+						 uint8_t	*addr_cpu,
+						 uint16_t	 length);
+
+#endif /* __MTI_23K640_H */

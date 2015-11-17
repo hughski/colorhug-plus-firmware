@@ -56,8 +56,6 @@ EXTRA_DIST =							\
 	ch-errno.h						\
 	ch-flash.c						\
 	ch-flash.h						\
-	ch-sram.c						\
-	ch-sram.h						\
 	m-stack
 
 -include $(top_srcdir)/git.mk

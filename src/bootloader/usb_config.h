@@ -41,7 +41,6 @@
 #define USB_DEVICE_DESCRIPTOR		chug_device_descriptor
 #define USB_CONFIG_DESCRIPTOR_MAP	usb_application_config_descs
 #define USB_STRING_DESCRIPTOR_FUNC	usb_application_get_string
-#define SET_INTERFACE_CALLBACK		chug_set_interface_callback
 
 /* optional callbacks */
 #define UNKNOWN_SETUP_REQUEST_CALLBACK	chug_unknown_setup_request_callback

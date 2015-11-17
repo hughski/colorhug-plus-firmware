@@ -24,13 +24,11 @@ SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
 	$(top_srcdir)/src/ch-errno.h				\
 	$(top_srcdir)/src/ch-flash.h				\
-	$(top_srcdir)/src/ch-sram.h				\
 	$(srcdir)/usb_config.h
 SRC_C =								\
 	$(top_srcdir)/src/ch-config.c				\
 	$(top_srcdir)/src/ch-errno.c				\
 	$(top_srcdir)/src/ch-flash.c				\
-	$(top_srcdir)/src/ch-sram.c				\
 	$(top_srcdir)/src/m-stack/usb/src/usb.c			\
 	$(top_srcdir)/src/m-stack/usb/src/usb_dfu.c		\
 	$(top_srcdir)/src/m-stack/usb/src/usb_winusb.c		\

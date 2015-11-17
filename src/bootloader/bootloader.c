@@ -32,7 +32,6 @@
 #include "ch-config.h"
 #include "ch-errno.h"
 #include "ch-flash.h"
-#include "ch-sram.h"
 
 #pragma config XINST	= OFF		/* turn off extended instruction set */
 #pragma config STVREN	= ON		/* Stack overflow reset */
@@ -80,10 +79,6 @@ static CHugConfig _cfg;
 #define LED_RED				0x02
 #define LED_GREEN			0x01
 #define CH_EEPROM_ADDR_WRDS		0x4000
-
-#ifdef DEVICE_IS_COLORHUG2
-uint8_t _buf_sram_is_crap[64];
-#endif
 
 /* This is the state machine used to switch between the different bootloader
  * and firmware modes:
@@ -147,16 +142,6 @@ chug_usb_dfu_write_callback(uint16_t addr, const uint8_t *data, uint16_t len, vo
 		return chug_flash_write(addr + CH_EEPROM_ADDR_WRDS, data, len);
 	}
 
-#ifdef DEVICE_IS_COLORHUG2
-	/* write to SRAM */
-	if (_alt_setting == 0x01) {
-//		chug_sram_dma_from_cpu(data, addr, len);
-//		chug_sram_dma_wait();
-		memcpy(_buf_sram_is_crap, data, 64);
-		return 0;
-	}
-#endif
-
 	/* invalid */
 	return -1;
 }
@@ -173,16 +158,6 @@ chug_usb_dfu_read_callback(uint16_t addr, uint8_t *data, uint16_t len, void *con
 	/* read from EEPROM */
 	if (_alt_setting == 0x00)
 		return chug_flash_read(addr + CH_EEPROM_ADDR_WRDS, data, len);
-
-#ifdef DEVICE_IS_COLORHUG2
-	/* read from SRAM */
-	if (_alt_setting == 0x01) {
-		memcpy(data, _buf_sram_is_crap, 64);
-//		chug_sram_dma_to_cpu(addr, data, len);
-//		chug_sram_dma_wait();
-		return DFU_STATUS_OK;
-	}
-#endif
 
 	/* invalid */
 	return -1;
@@ -244,35 +219,6 @@ main(void)
 	/* set RE0, RE1 output (LEDs) others input (unused) */
 	TRISE = 0x3c;
 
-	/* assign remappable input and outputs */
-	RPINR21 = 19;			/* RP19 = SDI2 */
-	RPINR22 = 12;			/* RP12 = SCK2 (input and output) */
-	RPOR12 = 0x0a;			/* RP12 = SCK2 */
-	RPOR13 = 0x09;			/* RP13 = SDO2 */
-	RPOR20 = 0x0c;			/* RP20 = SS2 (SSDMA) */
-
-#ifdef DEVICE_IS_COLORHUG2
-	/* turn on the SPI bus */
-	SSP2STATbits.CKE = 1;		/* enable SMBus-specific inputs */
-	SSP2STATbits.SMP = 0;		/* enable slew rate for HS mode */
-	SSP2CON1bits.SSPEN = 1;		/* enables the serial port */
-	SSP2CON1bits.SSPM = 0x0;	/* SPI master mode, clk = Fosc / 4 */
-
-	/* set up the DMA controller */
-	DMACON1bits.SSCON0 = 0;		/* SSDMA (_CS) is not DMA controlled */
-	DMACON1bits.SSCON1 = 0;
-	DMACON1bits.DLYINTEN = 0;	/* don't interrupt after each byte */
-	DMACON2bits.INTLVL = 0x0;	/* interrupt only when complete */
-	DMACON2bits.DLYCYC = 0x02;	/* minimum delay between bytes */
-
-	/* clear base SRAM memory */
-	chug_sram_wipe(0x0000, 0xffff);
-#endif
-
-	/* set up the I2C controller */
-	SSP1ADD = 0x3e;
-	OpenI2C1(MASTER, SLEW_ON);
-
 	/* set the LED state initially */
 	PORTE = LED_GREEN;
 
@@ -291,14 +237,6 @@ main(void)
 
 	/* set to known initial status suitable for a bootloader */
 	usb_dfu_set_state(DFU_STATE_DFU_IDLE);
-
-#ifdef HAVE_TESTS
-	/* optional tests */
-	if (chug_config_self_test() != 0)
-		chug_errno_show(CHUG_ERRNO_SELF_TEST_EEPROM, TRUE);
-	if (chug_sram_self_test() != 0)
-		chug_errno_show(CHUG_ERRNO_SELF_TEST_SRAM, TRUE);
-#endif
 
 	usb_init();
 
@@ -330,16 +268,6 @@ int8_t
 chug_unknown_setup_request_callback(const struct setup_packet *setup)
 {
 	return process_dfu_setup_request(setup);
-}
-
-/**
- * chug_set_interface_callback:
- **/
-int8_t
-chug_set_interface_callback(uint8_t interface, uint8_t alt_setting)
-{
-	_alt_setting = alt_setting;
-	return 0;
 }
 
 /**
