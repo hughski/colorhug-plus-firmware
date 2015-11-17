@@ -19,8 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-//#define DEVICE_IS_COLORHUG2
-
 #include <xc.h>
 #include <string.h>
 
@@ -54,7 +52,7 @@
 #pragma config WPEND	= PAGE_0	/* Write/Erase protect Flash Memory pages */
 #pragma config WPCFG	= ON		/* Write/Erase Protection of last page */
 #pragma config WPDIS	= OFF		/* Write Protect Disable */
-#ifdef DEVICE_IS_COLORHUG2
+#ifdef HAVE_24MHZ
 #pragma config PLLDIV	= 6		/* (24 MHz crystal used on this board) */
 #pragma config CPUDIV	= OSC2_PLL2	/* OSC1 = divide by 2 mode */
 #else
@@ -63,7 +61,7 @@
 #endif
 
 /* flash the LEDs when in bootloader mode */
-#ifdef DEVICE_IS_COLORHUG2
+#ifdef HAVE_24MHZ
 #define	BOOTLOADER_FLASH_INTERVAL	0x4000
 #else
 #define	BOOTLOADER_FLASH_INTERVAL	0x8000

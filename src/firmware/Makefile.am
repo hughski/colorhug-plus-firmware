@@ -53,7 +53,7 @@ firmware.dfu: firmware.hex Makefile
 	${DFUTOOL} set-vendor $@ 273f;				\
 	${DFUTOOL} set-product $@ 1002
 install-firmware: firmware.dfu Makefile
-	${DFUTOOL} --reset download $<
+	sudo ${DFUTOOL} --reset download $<
 
 CLEANFILES =							\
 	*.as							\
@@ -72,6 +72,7 @@ CLEANFILES =							\
 	*.sym
 
 EXTRA_DIST =							\
+	ch-common.h						\
 	firmware.c						\
 	mti_23k640.c						\
 	mti_23k640.h						\

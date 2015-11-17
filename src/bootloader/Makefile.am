@@ -45,7 +45,7 @@ bootloader_CFLAGS =						\
 bootloader.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(bootloader_CFLAGS) ${SRC_C} -o$@
 install-bootloader: bootloader.hex
-	${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -f $< -b ${PK2CMD_DIR}/ -m -r
+	sudo ${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -f $< -b ${PK2CMD_DIR}/ -m -r
 
 %.dfu: %.hex
 	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 8000

@@ -32,7 +32,7 @@
 #define NUMBER_OF_CONFIGURATIONS	1
 
 /* ping-pong buffering mode */
-#define PPB_MODE PPB_NONE
+#define PPB_MODE PPB_NONE // PPB_ALL
 
 /* no need to use usb_service() */
 //#define USB_USE_INTERRUPTS

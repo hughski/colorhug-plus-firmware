@@ -55,6 +55,9 @@ const struct device_descriptor chug_device_descriptor =
 	NUMBER_OF_CONFIGURATIONS
 };
 
+#define CHUG_INTERFACE_SUBCLASS			0x01
+#define CHUG_INTERFACE_PROTOCOL			0x01
+
 /* Configuration Packet Instance */
 static const struct configuration_1_packet configuration_1 =
 {
@@ -77,9 +80,9 @@ static const struct configuration_1_packet configuration_1 =
 	0x00,					/* InterfaceNumber */
 	0x00,					/* AlternateSetting */
 	0x00,					/* bNumEndpoints (num besides endpoint 0) */
-	0xff,					/* bInterfaceClass */
-	0xde,					/* bInterfaceSubclass */
-	0xad,					/* bInterfaceProtocol */
+	DEVICE_CLASS_VENDOR_SPECIFIC,		/* bInterfaceClass */
+	CHUG_INTERFACE_SUBCLASS,		/* bInterfaceSubclass */
+	CHUG_INTERFACE_PROTOCOL,		/* bInterfaceProtocol */
 	0x00,					/* iInterface */
 	},
 
