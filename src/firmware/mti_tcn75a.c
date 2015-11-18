@@ -39,14 +39,14 @@ mti_tcn75a_set_resolution(MtiTcn75aResolution resolution)
 	/* send slave address (write) */
 	rc = WriteI2C1(0b10010000);
 	if (rc != 0x00) {
-		rc = CHUG_ERRNO_I2C_ADDRESS;
+		rc = CH_ERROR_I2C_SLAVE_ADDRESS;
 		goto out;
 	}
 
 	/* set config pointer */
 	rc = WriteI2C1(0b00000001);
 	if (rc != 0x00) {
-		rc = CHUG_ERRNO_I2C_CONFIG;
+		rc = CH_ERROR_I2C_SLAVE_CONFIG;
 		goto out;
 	}
 
@@ -65,7 +65,7 @@ out:
  * mti_tcn75a_get_temperature:
  **/
 uint8_t
-mti_tcn75a_get_temperature(uint16_t *result)
+mti_tcn75a_get_temperature(int32_t *result)
 {
 	uint16_t tmp;
 	uint8_t rc;
@@ -78,7 +78,7 @@ mti_tcn75a_get_temperature(uint16_t *result)
 	/* send slave address (write) */
 	rc = WriteI2C1(0b10010000);
 	if (rc != 0x00) {
-		rc = CHUG_ERRNO_I2C_ADDRESS;
+		rc = CH_ERROR_I2C_SLAVE_ADDRESS;
 		goto out;
 	}
 
@@ -101,7 +101,7 @@ mti_tcn75a_get_temperature(uint16_t *result)
 	StopI2C1();
 
 	/* format result */
-	*result = (((uint16_t) tmp_msb) << 8) + tmp_lsb;
+	*result = (((int32_t) tmp_msb) << 16) + (((int32_t) tmp_lsb) << 8);
 out:
 	return rc;
 }

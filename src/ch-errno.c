@@ -38,7 +38,7 @@ _led_delay(void)
  * chug_errno_show:
  **/
 void
-chug_errno_show(CHugErrno errno, uint8_t is_fatal)
+chug_errno_show(ChError errno, uint8_t is_fatal)
 {
 	uint8_t i;
 	PORTE = 0;
@@ -48,7 +48,7 @@ chug_errno_show(CHugErrno errno, uint8_t is_fatal)
 		for (i = 0; i < errno; i++) {
 			_led_delay();
 			_led_delay();
-			PORTE = LED_RED;
+			PORTE = CH_STATUS_LED_RED;
 			_led_delay();
 			_led_delay();
 			PORTE = 0;

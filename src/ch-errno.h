@@ -24,22 +24,9 @@
 
 #include <xc.h>
 
-typedef enum {
-	CHUG_ERRNO_NONE			= 0,	/* same as DFU */
-	CHUG_ERRNO_ADDRESS		= 8,	/* same as DFU */
-	CHUG_ERRNO_NO_FIRMWARE		= 10,	/* same as DFU */
-	CHUG_ERRNO_UNKNOWN		= 14,	/* same as DFU */
-	CHUG_ERRNO_SELF_TEST_SRAM	= 16,
-	CHUG_ERRNO_SELF_TEST_EEPROM	= 17,
-	CHUG_ERRNO_I2C_ADDRESS		= 18,
-	CHUG_ERRNO_I2C_CONFIG		= 19,
-	CHUG_ERRNO_LAST
-} CHugErrno;
+#include "ColorHug.h"
 
-#define LED_RED				0x02
-#define LED_GREEN			0x01
-
-void		 chug_errno_show	(CHugErrno	 errno,
+void		 chug_errno_show	(ChError	 errno,
 					 uint8_t	 is_fatal);
 
 #endif /* __CH_ERRNO_H */

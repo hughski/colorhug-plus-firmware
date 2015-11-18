@@ -31,14 +31,21 @@
 
 #include "mti_23k640.h"
 #include "mti_tcn75a.h"
+#include "mzt_mcdc04.h"
 
-#include "ch-common.h"
 #include "ch-config.h"
 #include "ch-errno.h"
 
 static CHugConfig		 _cfg;
-static uint8_t			 _chug_buf[CHUG_TRANSFER_SIZE];
+static ChError			 _last_error = CH_ERROR_NONE;
+static ChCmd			 _last_error_cmd = CH_CMD_RESET;
 static uint16_t			 _integration_time = 0x0;
+static uint8_t			 _chug_buf[CH_EP0_TRANSFER_SIZE];
+static uint16_t			 _heartbeat_cnt = 0;
+
+#ifdef HAVE_MCDC04
+MztMcdc04Context		 _mcdc04_ctx;
+#endif
 
 /**
  * chug_usb_dfu_set_success_callback:
@@ -51,9 +58,59 @@ chug_usb_dfu_set_success_callback(void *context)
 		uint8_t rc;
 		_cfg.flash_success = TRUE;
 		rc = chug_config_write(&_cfg);
-		if (rc != CHUG_ERRNO_NONE)
+		if (rc != CH_ERROR_NONE)
 			chug_errno_show(rc, FALSE);
 	}
+}
+
+/**
+ * chug_set_error:
+ **/
+static void
+chug_set_error(ChCmd cmd, ChError status)
+{
+	_last_error = status;
+	_last_error_cmd = cmd;
+}
+
+/**
+ * chug_set_leds_internal:
+ **/
+static void
+chug_set_leds_internal(uint8_t leds)
+{
+	/* the first few boards on the P&P machines had the
+	 * LEDs soldered the wrong way around */
+	if ((_cfg.pcb_errata & CH_PCB_ERRATA_SWAPPED_LEDS) > 0) {
+		PORTEbits.RE0 = (leds & CH_STATUS_LED_GREEN);
+		PORTEbits.RE1 = (leds & CH_STATUS_LED_RED) >> 1;
+	} else {
+		PORTEbits.RE0 = (leds & CH_STATUS_LED_RED) >> 1;
+		PORTEbits.RE1 = (leds & CH_STATUS_LED_GREEN);
+	}
+}
+
+/**
+ * chug_heatbeat:
+ **/
+static void
+chug_heatbeat(uint8_t leds)
+{
+	/* do pulse up -> down -> up */
+	if (_heartbeat_cnt <= 0xff) {
+		uint8_t j;
+		uint8_t _duty = _heartbeat_cnt;
+		if (_duty > 127)
+			_duty = 0xff - _duty;
+		for (j = 0; j < _duty * 2; j++)
+			chug_set_leds_internal(leds);
+		for (j = 0; j < 0xff - _duty * 2; j++)
+			chug_set_leds_internal(0);
+	}
+
+	/* this is the 'pause' btween the bumps */
+	if (_heartbeat_cnt++ > 0xc000)
+		_heartbeat_cnt = 0;
 }
 
 #define HAVE_TESTS
@@ -95,10 +152,18 @@ main(void)
 	mti_23k640_wipe(0x0000, 0x2000);
 #endif
 
+#ifdef HAVE_MCDC04
+	/* set up MCDC04 */
+	mzt_mcdc04_init(&_mcdc04_ctx);
+	mzt_mcdc04_set_tint(&_mcdc04_ctx, MZT_MCDC04_TINT_512);
+	mzt_mcdc04_set_iref(&_mcdc04_ctx, MZT_MCDC04_IREF_20);
+	mzt_mcdc04_set_div(&_mcdc04_ctx, MZT_MCDC04_DIV_DISABLE);
+#endif
+
 #ifdef HAVE_TESTS
 	/* optional tests */
 	if (mti_23k640_self_test() != 0)
-		chug_errno_show(CHUG_ERRNO_SELF_TEST_SRAM, TRUE);
+		chug_errno_show(CH_ERROR_SRAM_FAILED, TRUE);
 #endif
 
 	/* read config */
@@ -113,6 +178,7 @@ main(void)
 		/* clear watchdog */
 		CLRWDT();
 		usb_service();
+		chug_heatbeat(CH_STATUS_LED_RED);
 	}
 
 	return 0;
@@ -123,7 +189,7 @@ _send_data_stage_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
-		chug_errno_show(CHUG_ERRNO_ADDRESS, FALSE);
+		chug_errno_show(CH_ERROR_INVALID_ADDRESS, FALSE);
 		return;
 	}
 }
@@ -135,28 +201,32 @@ static int8_t
 chug_handle_get_temperature(void)
 {
 #ifdef HAVE_TCN75A
-	uint16_t tmp;
+	int32_t tmp;
 	uint8_t rc;
 	rc = mti_tcn75a_get_temperature(&tmp);
-	if (rc != CHUG_ERRNO_NONE)
+	if (rc != CH_ERROR_NONE) {
+		chug_set_error(CH_CMD_GET_TEMPERATURE, rc);
 		return -1;
-	memcpy(_chug_buf, &tmp, 2);
-	usb_send_data_stage(_chug_buf, 2, _send_data_stage_cb, NULL);
+	}
+	memcpy(_chug_buf, &tmp, sizeof(int32_t));
+	usb_send_data_stage(_chug_buf, sizeof(int32_t),
+			    _send_data_stage_cb, NULL);
 	return 0;
 #else
+	chug_set_error(CH_CMD_GET_TEMPERATURE, CH_ERROR_NOT_IMPLEMENTED);
 	return -1;
 #endif
 }
 
 /**
- * chug_handle_get_spectrum:
+ * chug_handle_read_sram:
  **/
 static int8_t
-chug_handle_get_spectrum(const struct setup_packet *setup)
+chug_handle_read_sram(const struct setup_packet *setup)
 {
-	/* raw from sensor */
-	memset(_chug_buf, 0x10 + setup->wValue, CHUG_TRANSFER_SIZE);
-	usb_send_data_stage(_chug_buf, CHUG_TRANSFER_SIZE, _send_data_stage_cb, NULL);
+	/* FIXME: get from SRAM, using addr = setup->wValue * CH_EP0_TRANSFER_SIZE */
+	memset(_chug_buf, 0x00, CH_EP0_TRANSFER_SIZE);
+	usb_send_data_stage(_chug_buf, CH_EP0_TRANSFER_SIZE, _send_data_stage_cb, NULL);
 	return 0;
 }
 
@@ -168,28 +238,104 @@ _recieve_spectrum_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
-		chug_errno_show(CHUG_ERRNO_NO_FIRMWARE, FALSE);
+		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
 		return;
 	}
 }
 
 /**
- * chug_handle_set_spectrum:
+ * chug_handle_write_sram:
  **/
 static int8_t
-chug_handle_set_spectrum(const struct setup_packet *setup)
+chug_handle_write_sram(const struct setup_packet *setup)
 {
 	/* check size */
-	if (setup->wLength != 64)
+	if (setup->wLength != 64) {
+		chug_set_error(CH_CMD_WRITE_SRAM, CH_ERROR_INVALID_LENGTH);
 		return -1;
+	}
 
 	/* dark calibration */
-	if (setup->wValue == CHUG_SPECTRUM_KIND_DARK_CAL) {
+#define CH_SPECTRUM_KIND_DARK_CAL 0x01
+	if (setup->wValue == CH_SPECTRUM_KIND_DARK_CAL) {
 		usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
 						 _recieve_spectrum_cb, NULL);
 		return 0;
 	}
+	chug_set_error(CH_CMD_WRITE_SRAM, CH_ERROR_INVALID_VALUE);
 	return -1;
+}
+
+/**
+ * _recieve_spectral_calibration_cb:
+ **/
+static void
+_recieve_spectral_calibration_cb(bool transfer_ok, void *context)
+{
+	/* error */
+	if (!transfer_ok) {
+		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
+		return;
+	}
+
+	/* save to EEPROM */
+	memcpy(_cfg.wavelength_cal, _chug_buf, sizeof(int32_t) * 4);
+	chug_config_write(&_cfg);
+}
+
+/**
+ * chug_handle_set_wavelength_calibration:
+ **/
+static int8_t
+chug_handle_set_wavelength_calibration(const struct setup_packet *setup)
+{
+	/* check size */
+	if (setup->wLength != sizeof(int32_t) * 4) {
+		chug_set_error(CH_CMD_SET_CCD_CALIBRATION, CH_ERROR_INVALID_LENGTH);
+		return -1;
+	}
+	usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
+					 _recieve_spectral_calibration_cb, NULL);
+	return 0;
+}
+
+/**
+ * chug_handle_take_reading_spectral:
+ **/
+static int8_t
+chug_handle_take_reading_spectral(const struct setup_packet *setup)
+{
+	uint32_t i;
+	for (i = 0; i < 0xfffff; i++)
+		CLRWDT();
+	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+	return 0;
+}
+
+/**
+ * chug_handle_take_reading_xyz:
+ **/
+static int8_t
+chug_handle_take_reading_xyz(const struct setup_packet *setup)
+{
+#ifdef HAVE_MCDC04
+	ChError rc;
+	int32_t *buf = (int32_t *) _chug_buf;
+
+	/* get integer readings */
+	rc = mzt_mcdc04_take_readings_auto(&_mcdc04_ctx,
+					   &buf[0], &buf[1], &buf[2]);
+	if (rc != CH_ERROR_NONE) {
+		chug_set_error(CH_CMD_TAKE_READING_XYZ, rc);
+		return -1;
+	}
+	usb_send_data_stage(_chug_buf, sizeof(int32_t) * 3,
+			    _send_data_stage_cb, NULL);
+	return 0;
+#else
+	chug_set_error(CH_CMD_TAKE_READING_XYZ, CH_ERROR_NOT_IMPLEMENTED);
+	return -1;
+#endif
 }
 
 /**
@@ -202,65 +348,72 @@ process_chug_setup_request(struct setup_packet *setup)
 		return -1;
 	if (setup->REQUEST.type != REQUEST_TYPE_CLASS)
 		return -1;
-	if (setup->wIndex != CHUG_INTERFACE)
+	if (setup->wIndex != CH_USB_INTERFACE)
 		return -1;
 
 	/* process commands */
 	switch (setup->bRequest) {
 
 	/* device->host */
-	case CHUG_CMD_GET_SERIAL:
+	case CH_CMD_GET_SERIAL_NUMBER:
 		memcpy(_chug_buf, &_cfg.serial_number, 2);
 		usb_send_data_stage(_chug_buf, 2, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_GET_ERRATA:
+	case CH_CMD_GET_PCB_ERRATA:
 		_chug_buf[0] = _cfg.pcb_errata;
 		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_GET_INTEGRATION:
+	case CH_CMD_GET_INTEGRAL_TIME:
 		memcpy(_chug_buf, &_integration_time, 2);
 		usb_send_data_stage(_chug_buf, 2, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_GET_SPECTRUM:
-		return chug_handle_get_spectrum(setup);
-	case CHUG_CMD_GET_CALIBRATION:
-		//FIXME
-		return -1;
-	case CHUG_CMD_GET_TEMPERATURE:
+	case CH_CMD_READ_SRAM:
+		return chug_handle_read_sram(setup);
+	case CH_CMD_GET_CCD_CALIBRATION:
+		memcpy(_chug_buf, _cfg.wavelength_cal, sizeof(int32_t) * 4);
+		usb_send_data_stage(_chug_buf, sizeof(int32_t) * 4,
+				    _send_data_stage_cb, NULL);
+		return 0;
+	case CH_CMD_GET_TEMPERATURE:
 		return chug_handle_get_temperature();
+	case CH_CMD_GET_ERROR:
+		_chug_buf[0] = _last_error;
+		_chug_buf[1] = _last_error_cmd;
+		usb_send_data_stage(_chug_buf, 2, _send_data_stage_cb, NULL);
+		return 0;
 
 	/* host->device */
-	case CHUG_CMD_SET_SERIAL:
+	case CH_CMD_SET_SERIAL_NUMBER:
 		_cfg.serial_number = setup->wValue;
 		chug_config_write(&_cfg);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_SET_ERRATA:
+	case CH_CMD_SET_PCB_ERRATA:
 		_cfg.pcb_errata = setup->wValue;
 		chug_config_write(&_cfg);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_SET_INTEGRATION:
+	case CH_CMD_SET_INTEGRAL_TIME:
 		_integration_time = setup->wValue;
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
-	case CHUG_CMD_SET_SPECTRUM:
-		return chug_handle_set_spectrum(setup);
-	case CHUG_CMD_SET_CALIBRATION:
-		//FIXME
-		return -1;
+	case CH_CMD_WRITE_SRAM:
+		return chug_handle_write_sram(setup);
+	case CH_CMD_SET_CCD_CALIBRATION:
+		return chug_handle_set_wavelength_calibration(setup);
 
-	/* SLOW action */
-	case CHUG_CMD_TAKE_READING:
-		{
-			uint32_t i;
-			for (i = 0; i < 0xfffff; i++) {
-				CLRWDT();
-			}
-		}
+	/* actions */
+	case CH_CMD_CLEAR_ERROR:
+		chug_set_error(CH_CMD_LAST, CH_ERROR_NONE);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
-
+	case 0x51:	//FIXME: I have no idea!!!
+	case CH_CMD_TAKE_READING_SPECTRAL:
+		return chug_handle_take_reading_spectral(setup);
+	case CH_CMD_TAKE_READING_XYZ:
+		return chug_handle_take_reading_xyz(setup);
+	default:
+		chug_set_error(setup->bRequest, CH_ERROR_UNKNOWN_CMD);
 	}
 	return -1;
 }
@@ -275,6 +428,7 @@ chug_unknown_setup_request_callback(const struct setup_packet *setup)
 		return 0;
 	if (process_chug_setup_request((struct setup_packet *) setup) == 0)
 		return 0;
+chug_set_error(0x12, 0x34);
 	return -1;
 }
 

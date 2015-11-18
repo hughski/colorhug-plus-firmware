@@ -25,10 +25,23 @@
 #include <xc.h>
 #include <stdint.h>
 
+/**
+ * CHugConfig:
+ *
+ * A 64 byte config block shared between bootloader and all firmwares.
+ *
+ * If adding members to this struct then add them at the end and decrement the
+ * padding -- this is to ensure the bootloader always restores enough data for
+ * any firmware.
+ *
+ * Do not remove or re-order items in this struct. Think of it like an ABI.
+ **/
 typedef struct {
 	uint32_t	 serial_number;
 	uint16_t	 pcb_errata;
 	uint8_t		 flash_success;
+	int32_t		 wavelength_cal[4];
+	uint8_t		 padding[33];
 } CHugConfig;
 
 uint8_t		 chug_config_read		(CHugConfig	*cfg);

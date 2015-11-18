@@ -32,6 +32,6 @@ typedef enum {
 } MtiTcn75aResolution;
 
 uint8_t	 mti_tcn75a_set_resolution	(MtiTcn75aResolution	 resolution);
-uint8_t	 mti_tcn75a_get_temperature	(uint16_t		*result);
+uint8_t	 mti_tcn75a_get_temperature	(int32_t		*result);
 
 #endif /* __MTI_TCN75A_H */

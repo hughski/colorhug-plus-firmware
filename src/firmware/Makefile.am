@@ -24,8 +24,10 @@ SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
 	$(top_srcdir)/src/ch-errno.h				\
 	$(top_srcdir)/src/ch-flash.h				\
+	$(top_srcdir)/src/ColorHug.h				\
 	$(srcdir)/mti_23k640.h					\
 	$(srcdir)/mti_tcn75a.h					\
+	$(srcdir)/mzt_mcdc04.h					\
 	$(srcdir)/usb_config.h
 SRC_C =								\
 	$(top_srcdir)/src/ch-config.c				\
@@ -37,6 +39,7 @@ SRC_C =								\
 	$(srcdir)/firmware.c					\
 	$(srcdir)/mti_23k640.c					\
 	$(srcdir)/mti_tcn75a.c					\
+	$(srcdir)/mzt_mcdc04.c					\
 	$(srcdir)/usb_descriptors.c
 firmware_CFLAGS =						\
 	-I$(srcdir)						\
@@ -78,6 +81,8 @@ EXTRA_DIST =							\
 	mti_23k640.h						\
 	mti_tcn75a.c						\
 	mti_tcn75a.h						\
+	mzt_mcdc04.c						\
+	mzt_mcdc04.h						\
 	usb_config.h						\
 	usb_descriptors.c
 

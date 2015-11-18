@@ -56,6 +56,7 @@ EXTRA_DIST =							\
 	ch-errno.h						\
 	ch-flash.c						\
 	ch-flash.h						\
+	ColorHug.h						\
 	m-stack
 
 -include $(top_srcdir)/git.mk

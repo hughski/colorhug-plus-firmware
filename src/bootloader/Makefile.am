@@ -24,6 +24,7 @@ SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
 	$(top_srcdir)/src/ch-errno.h				\
 	$(top_srcdir)/src/ch-flash.h				\
+	$(top_srcdir)/src/ColorHug.h				\
 	$(srcdir)/usb_config.h
 SRC_C =								\
 	$(top_srcdir)/src/ch-config.c				\

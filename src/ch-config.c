@@ -39,13 +39,13 @@ chug_config_read(CHugConfig *cfg)
 	rc = chug_flash_read(CH_CONFIG_ADDRESS_WRDS,
 			     (uint8_t *) cfg,
 			     sizeof(CHugConfig));
-	if (rc != CHUG_ERRNO_NONE)
+	if (rc != CH_ERROR_NONE)
 		return rc;
 
 	/* no config block, so set to defaults */
 	if (cfg->flash_success == 0xff)
 		memset(cfg, 0x00, sizeof(CHugConfig));
-	return CHUG_ERRNO_NONE;
+	return CH_ERROR_NONE;
 }
 
 /**
@@ -58,7 +58,7 @@ chug_config_write(CHugConfig *cfg)
 
 	/* erase config block (and some extra) then write */
 	rc = chug_flash_erase(CH_CONFIG_ADDRESS_WRDS, CH_FLASH_ERASE_BLOCK_SIZE);
-	if (rc != CHUG_ERRNO_NONE)
+	if (rc != CH_ERROR_NONE)
 		return rc;
 	return chug_flash_write(CH_CONFIG_ADDRESS_WRDS, (uint8_t *) cfg, sizeof(CHugConfig));
 }

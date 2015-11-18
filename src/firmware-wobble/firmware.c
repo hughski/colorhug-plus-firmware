@@ -45,7 +45,7 @@ chug_usb_dfu_set_success_callback(void *context)
 		uint8_t rc;
 		_cfg.flash_success = TRUE;
 		rc = chug_config_write(&_cfg);
-		if (rc != CHUG_ERRNO_NONE)
+		if (rc != CH_ERROR_NONE)
 			chug_errno_show(rc, FALSE);
 	}
 }

@@ -50,7 +50,7 @@ chug_flash_erase(uint16_t addr, uint16_t len)
 
 	/* check this is aligned */
 	if (addr % (CH_FLASH_ERASE_BLOCK_SIZE / 2) > 0)
-		return CHUG_ERRNO_ADDRESS;
+		return CH_ERROR_INVALID_ADDRESS;
 
 	/* disable interrupts if set */
 	if (INTCONbits.GIE) {
@@ -71,7 +71,7 @@ chug_flash_erase(uint16_t addr, uint16_t len)
 	/* re-enable interrupts */
 	if (enable_int)
 		INTCONbits.GIE = 1;
-	return CHUG_ERRNO_NONE;
+	return CH_ERROR_NONE;
 }
 
 
@@ -87,7 +87,7 @@ chug_flash_write(uint16_t addr, const uint8_t *data, uint16_t len)
 
 	/* check this is aligned */
 	if (addr % (CH_FLASH_WRITE_BLOCK_SIZE / 2) > 0)
-		return CHUG_ERRNO_ADDRESS;
+		return CH_ERROR_INVALID_ADDRESS;
 
 	/* disable interrupts if set */
 	if (INTCONbits.GIE) {
@@ -117,7 +117,7 @@ chug_flash_write(uint16_t addr, const uint8_t *data, uint16_t len)
 	/* re-enable interrupts */
 	if (enable_int)
 		INTCONbits.GIE = 1;
-	return CHUG_ERRNO_NONE;
+	return CH_ERROR_NONE;
 }
 
 /**
@@ -131,5 +131,5 @@ chug_flash_read(uint16_t addr, uint8_t *data, uint16_t len)
 		asm("TBLRDPOSTINC");
 		*data++ = TABLAT;
 	}
-	return CHUG_ERRNO_NONE;
+	return CH_ERROR_NONE;
 }

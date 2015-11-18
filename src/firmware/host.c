@@ -19,13 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-//gcc -Wall -o host host.c ch-client.c `pkg-config gusb --libs --cflags` && ./host
+//gcc -Wall -o host host.c ch-device.c `pkg-config gusb colord colorhug --libs --cflags` && ./host
 
 #include <stdlib.h>
 #include <glib.h>
 
-#include "ch-common.h"
-#include "ch-client.h"
+#include "ch-device.h"
 
 /**
  * main:
@@ -33,70 +32,112 @@
 int
 main (int argc, char **argv)
 {
-	guint16 serial = 0xffff;
-	guint16 integration = 0xffff;
+	ChPcbErrata errata = 0xff;
+	gboolean ret;
+	gdouble cal[4];
 	gdouble temp = -1.f;
-	CHugPcbErrata errata = 0xff;
-	g_autoptr(GUsbDevice) dev = NULL;
-	g_autoptr(GUsbContext) ctx = NULL;
+	guint16 integration = 0xffff;
+	guint16 serial = 0xffff;
+	g_autofree gchar *str = NULL;
+	g_autoptr(CdColorXYZ) xyz = NULL;
+	g_autoptr(CdSpectrum) sp = NULL;
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
+	g_autoptr(GUsbDevice) dev = NULL;
+
+	/* debugging */
+	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	g_setenv ("G_DEBUG", "fatal-criticals", TRUE);
 
 	ctx = g_usb_context_new (&error);
-	if (ctx == NULL)
-		g_error ("failed to get devices: %s", error->message);
+	g_assert_no_error (error);
+	g_assert (ctx != NULL);
 	g_usb_context_enumerate (ctx);
 
 	g_debug ("finding device");
 	dev = g_usb_context_find_by_vid_pid (ctx, 0x273f, 0x1002, &error);
-	if (dev == NULL)
-		g_error ("failed to find: %s", error->message);
+	g_assert_no_error (error);
+	g_assert (dev != NULL);
 
 	g_debug ("open");
-	if (!g_usb_device_open (dev, &error))
-		g_error ("%s", error->message);
-
-	g_debug ("claim interface");
-	if (!g_usb_device_claim_interface (dev, CHUG_INTERFACE, 0, &error))
-		g_error ("%s", error->message);
+	ret = ch_device_open_full (dev, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* set the serial number and errata */
 	if (0) {
-		if (!chug_cmd_set_serial (dev, 999, NULL, &error))
-			g_error ("%s", error->message);
-		if (!chug_cmd_set_errata (dev, CHUG_PCB_ERRATA_SWAPPED_LEDS, NULL, &error))
-			g_error ("%s", error->message);
+		ret = ch_device_set_serial_number (dev, 999, NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+		ret = ch_device_set_pcb_errata (dev, CH_PCB_ERRATA_SWAPPED_LEDS, NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+		ret = ch_device_set_ccd_calibration (dev,
+						    355, 0.37f, -0.000251235, 0.f,
+						    NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
 	}
 
 	/* get the serial number */
-	if (!chug_cmd_get_serial (dev, &serial, NULL, &error))
-		g_error ("%s", error->message);
-	g_print ("serial=%i\n", serial);
+	ret = ch_device_get_serial_number (dev, &serial, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpint (serial, ==, 999);
 
 	/* get the errata */
-	if (!chug_cmd_get_errata (dev, &errata, NULL, &error))
-		g_error ("%s", error->message);
-	g_print ("errata=0x%02x\n", errata);
+	ret = ch_device_get_pcb_errata (dev, &errata, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpint (errata, ==, CH_PCB_ERRATA_SWAPPED_LEDS);
 
 	/* set/get integration */
-	if (!chug_cmd_set_integration (dev, 1204, NULL, &error))
-		g_error ("%s", error->message);
-	if (!chug_cmd_get_integration (dev, &integration, NULL, &error))
-		g_error ("%s", error->message);
-	g_print ("integration=%i\n", integration);
+	ret = ch_device_set_integral_time (dev, 1204, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	ret = ch_device_get_integral_time (dev, &integration, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpint (integration, ==, 1204);
+
+	/* take temp */
+	ret = ch_device_get_temperature (dev, &temp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpfloat (temp, >, 10);
+	g_assert_cmpfloat (temp, <, 30);
+
+	/* get spectral calibration */
+	ret = ch_device_get_ccd_calibration (dev,
+					     &cal[0], &cal[1], &cal[2], &cal[3],
+					     NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_print ("SPECTRAL_CAL=%.1f,%.3f,%.8f,%.8f\n",
+		 cal[0], cal[1], cal[2], cal[3]);
+
+if(0){
+	/* get XYZ */
+	xyz = ch_device_take_reading_xyz (dev, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (xyz != NULL);
+	g_print ("XYZ=%.2f,%.2f,%.2f\n", xyz->X, xyz->Y, xyz->Z);
+}
 
 	/* take reading */
 	g_print ("GO...");
-	if (!chug_cmd_take_reading (dev, CHUG_SPECTRUM_KIND_RAW, NULL, &error))
-		g_error ("%s", error->message);
+	ret = ch_device_take_reading_spectral (dev, CH_SPECTRUM_KIND_RAW, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 	g_print ("STOP\n");
 
-	if (!chug_cmd_get_spectrum (dev, NULL, &error))
-		g_error ("%s", error->message);
-
-	/* take temp */
-	if (!chug_cmd_get_temperature (dev, &temp, NULL, &error))
-		g_error ("%s", error->message);
-	g_print ("TEMP=%.2f\n", temp);
+	/* get spetrum */
+	sp = ch_device_get_spectrum (dev, NULL, &error);
+	if (sp == NULL)
+	g_assert_no_error (error);
+	g_assert (sp != NULL);
+	str = cd_spectrum_to_string (sp, 60, 10);
+	g_print ("%s\n", str);
 
 	return 0;
 }

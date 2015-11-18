@@ -74,8 +74,8 @@ static uint8_t _did_upload_or_download = FALSE;
 static uint8_t _do_reset = FALSE;
 static CHugConfig _cfg;
 
-#define LED_RED				0x02
-#define LED_GREEN			0x01
+#define CH_STATUS_LED_RED		0x02
+#define CH_STATUS_LED_GREEN		0x01
 #define CH_EEPROM_ADDR_WRDS		0x4000
 
 /* This is the state machine used to switch between the different bootloader
@@ -105,9 +105,9 @@ chug_boot_runtime(void)
 
 	chug_flash_read(CH_EEPROM_ADDR_WRDS, (uint8_t *) &runcode_start, 2);
 	if (runcode_start == 0xffff)
-		chug_errno_show(CHUG_ERRNO_NO_FIRMWARE, TRUE);
+		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, TRUE);
 	asm("ljmp 0x4000");
-	chug_errno_show(CHUG_ERRNO_UNKNOWN, TRUE);
+	chug_errno_show(CH_ERROR_NOT_IMPLEMENTED, TRUE);
 }
 
 /**
@@ -218,7 +218,7 @@ main(void)
 	TRISE = 0x3c;
 
 	/* set the LED state initially */
-	PORTE = LED_GREEN;
+	PORTE = CH_STATUS_LED_GREEN;
 
 /* Configure interrupts, per architecture */
 #ifdef USB_USE_INTERRUPTS
