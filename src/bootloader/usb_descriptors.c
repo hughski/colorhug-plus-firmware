@@ -109,10 +109,10 @@ static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[15]
 	DESC_STRING,
 	{'C','o','l','o','r','H','u','g','+',' ','[','D','F','U',']'}
 };
-static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[6]; } interface_eeprom_string = {
-	sizeof(interface_eeprom_string),
+static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[18]; } dfu_string = {
+	sizeof(dfu_string),
 	DESC_STRING,
-	{'e','e','p','r','o','m'}
+	{'@','F','l','a','s','h',' ','/','0','x','0','/','1','*','3','2','K','e'}
 };
 
 /* Get String function */
@@ -132,8 +132,8 @@ usb_application_get_string(uint8_t string_number, const void **ptr)
 		/* FIXME: read a serial number out of EEPROM */
 		return -1;
 	} else if (string_number == 4) {
-		*ptr = &interface_eeprom_string;
-		return sizeof(interface_eeprom_string);
+		*ptr = &dfu_string;
+		return sizeof(dfu_string);
 	}
 
 	return -1;
