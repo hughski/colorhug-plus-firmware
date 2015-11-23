@@ -108,7 +108,7 @@ static const struct configuration_1_packet configuration_1 =
 	DFU_ATTRIBUTE_WILL_DETACH |
 	DFU_ATTRIBUTE_MANIFESTATON_TOLERANT,	/* bmAttributes */
 	0x00,					/* wDetachTimeOut (ms) */
-	0x64,					/* wTransferSize */
+	DFU_TRANSFER_SIZE,			/* wTransferSize */
 	0x0101,					/* bcdDFUVersion */
 	},
 
