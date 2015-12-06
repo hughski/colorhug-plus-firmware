@@ -29,6 +29,7 @@
 #include "usb_hid.h"
 #include "usb_dfu.h"
 
+#include "oo_elis1024.h"
 #include "mti_23k640.h"
 #include "mti_tcn75a.h"
 #include "mzt_mcdc04.h"
@@ -152,6 +153,35 @@ main(void)
 	mti_23k640_wipe(0x0000, 0x2000);
 #endif
 
+#ifdef HAVE_ELIS1024
+	/* set up the ADC */
+	//ADCON0bits.VCFG1 = 1;		/* Vref- (AN2) */
+	//ADCON0bits.VCFG0 = 1;		/* Vref+ (AN3) */
+	ADCON0bits.VCFG1 = 0;//FIXME: only until we have resitors
+	ADCON0bits.VCFG0 = 0;//FIXME: only until we have resitors
+	ADCON0bits.CHS = 0b0000;	/* input (AN0) */
+	ADCON0bits.ADON = 1;		/* enable module */
+	ADCON1bits.ACQT = 0b111;	/* A/D Acquisition Time Select (FIXME: can we disable this?) */
+	ADCON1bits.ADCS = 0b010;	/* A/D Conversion Clock Select (Fosc/32) */
+	ANCON1bits.VBGEN = 0;		/* enable band gap reference */
+	ANCON0bits.PCFG0 = 0;		/* AN0 = analog */
+
+	/* perform ADC calibration */
+	ADCON1bits.ADCAL = 1;
+	ADCON0bits.GO = 1;
+	while (ADCON0bits.GO);
+	ADCON1bits.ADCAL = 0;
+
+	//FIXME: new bootloader please..........................................................
+	TRISA = 0b11011101;
+	TRISC = 0b11011000;
+	TRISD = 0b11110100;
+	TRISE = 0b11111000;
+
+	/* power down sensor */
+	oo_elis1024_set_standby();
+#endif
+
 #ifdef HAVE_MCDC04
 	/* set up MCDC04 */
 	mzt_mcdc04_init(&_mcdc04_ctx);
@@ -224,8 +254,12 @@ chug_handle_get_temperature(void)
 static int8_t
 chug_handle_read_sram(const struct setup_packet *setup)
 {
-	/* FIXME: get from SRAM, using addr = setup->wValue * CH_EP0_TRANSFER_SIZE */
-	memset(_chug_buf, 0x00, CH_EP0_TRANSFER_SIZE);
+	memset(_chug_buf, 0x00, setup->wLength);
+#ifdef HAVE_SRAM
+	mti_23k640_dma_to_cpu(setup->wValue * CH_EP0_TRANSFER_SIZE,
+			      _chug_buf,
+			      setup->wLength);
+#endif
 	usb_send_data_stage(_chug_buf, CH_EP0_TRANSFER_SIZE, _send_data_stage_cb, NULL);
 	return 0;
 }
@@ -345,9 +379,7 @@ chug_handle_set_crypto_key(const struct setup_packet *setup)
 static int8_t
 chug_handle_take_reading_spectral(const struct setup_packet *setup)
 {
-	uint32_t i;
-	for (i = 0; i < 0xfffff; i++)
-		CLRWDT();
+	oo_elis1024_take_sample(1024);
 	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 	return 0;
 }

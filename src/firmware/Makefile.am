@@ -25,6 +25,7 @@ SRC_H =								\
 	$(top_srcdir)/src/ch-errno.h				\
 	$(top_srcdir)/src/ch-flash.h				\
 	$(top_srcdir)/src/ColorHug.h				\
+	$(srcdir)/oo_elis1024.h					\
 	$(srcdir)/mti_23k640.h					\
 	$(srcdir)/mti_tcn75a.h					\
 	$(srcdir)/mzt_mcdc04.h					\
@@ -37,6 +38,7 @@ SRC_C =								\
 	$(top_srcdir)/src/m-stack/usb/src/usb_dfu.c		\
 	$(top_srcdir)/src/m-stack/usb/src/usb_winusb.c		\
 	$(srcdir)/firmware.c					\
+	$(srcdir)/oo_elis1024.c					\
 	$(srcdir)/mti_23k640.c					\
 	$(srcdir)/mti_tcn75a.c					\
 	$(srcdir)/mzt_mcdc04.c					\

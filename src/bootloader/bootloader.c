@@ -272,15 +272,15 @@ main(void)
 	ANCON0 = 0xFF;
 	ANCON1 = 0xFF;
 
-	/* set RA0 to input (READY)
-	 * set RA1 to input (unused)
-	 * set RA2 to input (unused)
-	 * set RA3 to input (unused)
+	/* set RA0 to input (ELIS_VIDEO)
+	 * set RA1 to output (ELIS_SHT)
+	 * set RA2 to input (AN2[ref-])
+	 * set RA3 to input (AN3[ref+])
 	 * set RA4 to input (missing)
-	 * set RA5 to input (frequency counter),
+	 * set RA5 to output (ELIS_DATA),
 	 * (RA6 is "don't care" in OSC2 mode)
 	 * set RA7 to input (OSC1, HSPLL in) */
-	TRISA = 0b11111111;
+	TRISA = 0b11011101;
 
 	/* set RB0 to input (h/w revision),
 	 * set RB1 to input (h/w revision),
@@ -292,25 +292,28 @@ main(void)
 	 * set RB7 to input (PGD) */
 	TRISB = 0b11111111;
 
-	/* set RC0 to input (unused),
+	/* set RC0 to output (LED2),
 	 * set RC1 to output (SCK2),
 	 * set RC2 to output (SDO2)
 	 * set RC3 to input (unused)
 	 * set RC4 to input (unused)
-	 * set RC5 to input (unused)
+	 * set RC5 to output (LED3)
 	 * set RC6 to input (unused
 	 * set RC7 to input (unused) */
-	TRISC = 0b11111001;
+	TRISC = 0b11011000;
 
-	/* set RD0 to input (unused),
-	/* set RD1 to input (unused),
+	/* set RD0 to output (ELIS_RM),
+	/* set RD1 to output (ELIS_CLK),
 	 * set RD2 to input (SDI2),
 	 * set RD3 to output (SS2) [SSDMA?],
 	 * set RD4-RD7 to input (unused) */
-	TRISD = 0b11110111;
+	TRISD = 0b11110100;
 
 	/* set RE0, RE1 output (LEDs) others input (unused) */
-	TRISE = 0x3c;
+	/* set RE0 to output (LED0),
+	 * set RE1 to output (LED1),
+	 * set RE2 to output (ELIS_RST) */
+	TRISE = 0b11111000;
 
 	/* set the LED state initially */
 	PORTE = CH_STATUS_LED_GREEN;
