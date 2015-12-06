@@ -44,6 +44,7 @@ typedef enum {
 	CH_CMD_SET_INTEGRAL_TIME	= 0x06,
 	CH_CMD_SET_CCD_CALIBRATION	= 0x54, //ish
 	CH_CMD_WRITE_SRAM		= 0x39,
+	CH_CMD_SET_CRYPTO_KEY		= 0x70,
 
 	/* read only */
 	CH_CMD_GET_ERROR		= 0x60,

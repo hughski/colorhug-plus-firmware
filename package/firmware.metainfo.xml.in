@@ -2,7 +2,7 @@
 <!-- Copyright 2015 Richard Hughes <richard@hughsie.com> -->
 <component type="firmware">
   <id>com.hughski.ColorHug+.firmware</id>
-  <name>ColorHug+ Device Update</name>
+  <name>ColorHug+</name>
   <summary>Firmware for the Hughski ColorHug+ Spectrometer</summary>
   <description>
     <p>

@@ -61,6 +61,10 @@ gboolean	 ch_device_set_ccd_calibration	(GUsbDevice	*dev,
 						 gdouble	 c2,
 						 GCancellable	*cancellable,
 						 GError		**error);
+gboolean	 ch_device_set_crypto_key	(GUsbDevice	*dev,
+						 guint32	 keys[4],
+						 GCancellable	*cancellable,
+						 GError		**error);
 gboolean	 ch_device_get_ccd_calibration	(GUsbDevice	*dev,
 						 gdouble	*nm_start,
 						 gdouble	*c0,

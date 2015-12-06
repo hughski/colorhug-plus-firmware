@@ -27,6 +27,8 @@
 #include "usb_hid.h"
 #include "usb_dfu.h"
 
+#include "ch-config.h"
+
 /* Configuration Packet */
 struct configuration_1_packet {
 	struct configuration_descriptor		config;
@@ -112,7 +114,13 @@ static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[15]
 static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[18]; } dfu_string = {
 	sizeof(dfu_string),
 	DESC_STRING,
-	{'@','F','l','a','s','h',' ','/','0','x','0','/','1','*','3','2','K','e'}
+	{'@','F','l','a','s','h',' ','/','0','x','0','/','1','*','1','6','K','e'}
+};
+
+static const struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[23]; } dfu_string_xtea = {
+	sizeof(dfu_string_xtea),
+	DESC_STRING,
+	{'@','F','l','a','s','h','|','X','T','E','A',' ','/','0','x','0','/','1','*','1','6','K','e'}
 };
 
 /* Get String function */
@@ -132,8 +140,17 @@ usb_application_get_string(uint8_t string_number, const void **ptr)
 		/* FIXME: read a serial number out of EEPROM */
 		return -1;
 	} else if (string_number == 4) {
-		*ptr = &dfu_string;
-		return sizeof(dfu_string);
+		CHugConfig cfg;
+
+		/* is the device only accepting signed firmware */
+		chug_config_read(&cfg);
+		if (chug_config_has_signing_key(&cfg)) {
+			*ptr = &dfu_string_xtea;
+			return sizeof(dfu_string_xtea);
+		} else {
+			*ptr = &dfu_string;
+			return sizeof(dfu_string);
+		}
 	}
 
 	return -1;

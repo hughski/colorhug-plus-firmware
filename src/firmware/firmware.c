@@ -300,6 +300,46 @@ chug_handle_set_wavelength_calibration(const struct setup_packet *setup)
 }
 
 /**
+ * _recieve_crypto_key_cb:
+ **/
+static void
+_recieve_crypto_key_cb(bool transfer_ok, void *context)
+{
+	/* error */
+	if (!transfer_ok) {
+		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
+		return;
+	}
+
+	/* save to EEPROM */
+	memcpy(_cfg.signing_key, _chug_buf, sizeof(uint32_t) * 4);
+	chug_config_write(&_cfg);
+}
+
+/**
+ * chug_handle_set_crypto_key:
+ **/
+static int8_t
+chug_handle_set_crypto_key(const struct setup_packet *setup)
+{
+	/* check size */
+	if (setup->wLength != sizeof(uint32_t) * 4) {
+		chug_set_error(CH_CMD_SET_CRYPTO_KEY, CH_ERROR_INVALID_LENGTH);
+		return -1;
+	}
+
+	/* already set */
+	if (chug_config_has_signing_key(&_cfg)) {
+		chug_set_error(CH_CMD_SET_CRYPTO_KEY, CH_ERROR_WRONG_UNLOCK_CODE);
+		return -1;
+	}
+
+	usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
+					 _recieve_crypto_key_cb, NULL);
+	return 0;
+}
+
+/**
  * chug_handle_take_reading_spectral:
  **/
 static int8_t
@@ -401,6 +441,8 @@ process_chug_setup_request(struct setup_packet *setup)
 		return chug_handle_write_sram(setup);
 	case CH_CMD_SET_CCD_CALIBRATION:
 		return chug_handle_set_wavelength_calibration(setup);
+	case CH_CMD_SET_CRYPTO_KEY:
+		return chug_handle_set_crypto_key(setup);
 
 	/* actions */
 	case CH_CMD_CLEAR_ERROR:
@@ -428,7 +470,6 @@ chug_unknown_setup_request_callback(const struct setup_packet *setup)
 		return 0;
 	if (process_chug_setup_request((struct setup_packet *) setup) == 0)
 		return 0;
-chug_set_error(0x12, 0x34);
 	return -1;
 }
 

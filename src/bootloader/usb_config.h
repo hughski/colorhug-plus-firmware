@@ -48,7 +48,7 @@
 
 /* DFU configuration functions */
 #define USB_DFU_USE_BOOTLOADER
-#define DFU_FLASH_LENGTH		0x8000	/* bytes */
+#define DFU_FLASH_LENGTH		0x4000	/* bytes */
 #define DFU_TRANSFER_SIZE		64	/* bytes */
 #define USB_DFU_READ_FUNC		chug_usb_dfu_read_callback
 #define USB_DFU_WRITE_FUNC		chug_usb_dfu_write_callback

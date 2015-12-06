@@ -64,6 +64,17 @@ main (int argc, char **argv)
 	g_assert_no_error (error);
 	g_assert (ret);
 
+	if (0) {
+		guint32 keys[4];
+		keys[0] = 0x47AC8203;
+		keys[1] = 0x93d8e9af;
+		keys[2] = 0x275fc2ba;
+		keys[3] = 0x95e20110;
+		ret = ch_device_set_crypto_key (dev, keys, NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+	}
+
 	/* set the serial number and errata */
 	if (0) {
 		ret = ch_device_set_serial_number (dev, 999, NULL, &error);

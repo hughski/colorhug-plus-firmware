@@ -64,6 +64,20 @@ chug_config_write(CHugConfig *cfg)
 }
 
 /**
+ * chug_config_has_signing_key:
+ **/
+uint8_t
+chug_config_has_signing_key(CHugConfig *cfg)
+{
+	if (cfg->signing_key[0] != 0 ||
+	    cfg->signing_key[1] != 0 ||
+	    cfg->signing_key[2] != 0 ||
+	    cfg->signing_key[3] != 0)
+		return TRUE;
+	return FALSE;
+}
+
+/**
  * chug_config_self_test:
  **/
 uint8_t

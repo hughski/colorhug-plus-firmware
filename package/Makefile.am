@@ -24,6 +24,7 @@ all: $(VENDOR)-$(PROJECT_NAME)-${VERSION}.cab
 
 CAB_FILES=							\
 	../src/firmware/firmware.dfu				\
+	../src/firmware/firmware.xdfu				\
 	firmware.metainfo.xml
 
 check: firmware.metainfo.xml

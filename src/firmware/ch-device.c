@@ -306,6 +306,54 @@ ch_device_set_ccd_calibration (GUsbDevice *dev,
 }
 
 /**
+ * ch_device_set_crypto_key:
+ * @dev: A #GUsbDevice
+ * @keys: a set of XTEA keys
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Sets the firmware signing keys on the device.
+ *
+ * IMPORTANT: This can only be called once until the device is unlocked.
+ *
+ * NOTE: This uses the ColorHug HID-less protocol and only works with ColorHug+.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 1.3.1
+ **/
+gboolean
+ch_device_set_crypto_key (GUsbDevice *dev,
+			  guint32 keys[4],
+			  GCancellable *cancellable,
+			  GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (G_USB_DEVICE (dev), FALSE);
+
+	/* hit hardware */
+	ret = g_usb_device_control_transfer (dev,
+					     G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE,
+					     G_USB_DEVICE_REQUEST_TYPE_CLASS,
+					     G_USB_DEVICE_RECIPIENT_INTERFACE,
+					     CH_CMD_SET_CRYPTO_KEY,
+					     0,			/* wValue */
+					     CH_USB_INTERFACE,	/* idx */
+					     (guint8 *) keys,	/* data */
+					     sizeof(guint32) * 4, /* length */
+					     NULL,		/* actual_length */
+					     CH_DEVICE_USB_TIMEOUT,
+					     cancellable,
+					     error);
+	if (!ret)
+		return FALSE;
+
+	/* check status */
+	return ch_device_check_status (dev, cancellable, error);
+}
+
+/**
  * ch_device_get_ccd_calibration:
  * @dev: A #GUsbDevice
  * @cancellable: a #GCancellable, or %NULL

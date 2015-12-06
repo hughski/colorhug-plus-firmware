@@ -110,11 +110,68 @@ chug_boot_runtime(void)
 	chug_errno_show(CH_ERROR_NOT_IMPLEMENTED, TRUE);
 }
 
+#define XTEA_DELTA		0x9e3779b9
+#define XTEA_NUM_ROUNDS		32
+
+/**
+ * chug_xtea_encode:
+ **/
+static void
+chug_xtea_encode (const uint32_t key[4], uint8_t *data, uint16_t length)
+{
+	uint32_t sum;
+	uint32_t *tmp = (uint32_t *) data;
+	uint32_t v0;
+	uint32_t v1;
+	uint8_t i;
+	uint8_t j;
+
+	for (j = 0; j < length / 4; j += 2) {
+		sum = 0;
+		v0 = tmp[j];
+		v1 = tmp[j+1];
+		for (i = 0; i < XTEA_NUM_ROUNDS; i++) {
+			v0 += (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+			sum += XTEA_DELTA;
+			v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum >> 11) & 3]);
+		}
+		tmp[j] = v0;
+		tmp[j+1] = v1;
+	}
+}
+
+/**
+ * chug_xtea_decode:
+ **/
+static void
+chug_xtea_decode (const uint32_t key[4], uint8_t *data, uint16_t length)
+{
+	uint32_t sum;
+	uint32_t *tmp = (uint32_t *) data;
+	uint32_t v0;
+	uint32_t v1;
+	uint8_t i;
+	uint8_t j;
+
+	for (j = 0; j < length / 4; j += 2) {
+		v0 = tmp[j];
+		v1 = tmp[j+1];
+		sum = XTEA_DELTA * XTEA_NUM_ROUNDS;
+		for (i = 0; i < XTEA_NUM_ROUNDS; i++) {
+			v1 -= (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum >> 11) & 3]);
+			sum -= XTEA_DELTA;
+			v0 -= (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+		}
+		tmp[j] = v0;
+		tmp[j+1] = v1;
+	}
+}
+
 /**
  * chug_usb_dfu_write_callback:
  **/
 int8_t
-chug_usb_dfu_write_callback(uint16_t addr, const uint8_t *data, uint16_t len, void *context)
+chug_usb_dfu_write_callback(uint16_t addr, uint8_t *data, uint16_t len, void *context)
 {
 	int8_t rc;
 
@@ -123,6 +180,24 @@ chug_usb_dfu_write_callback(uint16_t addr, const uint8_t *data, uint16_t len, vo
 
 	/* erase EEPROM and write */
 	if (_alt_setting == 0x00) {
+
+		/* decrypt */
+		if (chug_config_has_signing_key(&_cfg)) {
+			uint32_t *key = _cfg.signing_key;
+			chug_xtea_decode(key, data, len);
+		}
+
+		/* check this looks like a valid firmware by checking the
+		 * interrupt vector values; these will be 0x1200 for proper
+		 * firmware or 0x0000 if the firmware doesn't handle them */
+		if (addr == 0x0000) {
+			uint16_t *vectors = (uint16_t *) (data + 4);
+			if ((vectors[0] != 0x0000 && vectors[0] != 0x1200) ||
+			    (vectors[1] != 0x0000 && vectors[1] != 0x1200)) {
+				usb_dfu_set_status(DFU_STATUS_ERR_FILE);
+				return -1;
+			}
+		}
 
 		/* set the auto-boot flag to false */
 		if (_cfg.flash_success) {
@@ -134,10 +209,19 @@ chug_usb_dfu_write_callback(uint16_t addr, const uint8_t *data, uint16_t len, vo
 		if (addr % CH_FLASH_ERASE_BLOCK_SIZE == 0) {
 			rc = chug_flash_erase(addr + CH_EEPROM_ADDR_WRDS,
 					      CH_FLASH_ERASE_BLOCK_SIZE);
-			if (rc != 0)
-				return rc;
+			if (rc != 0) {
+				usb_dfu_set_status(DFU_STATUS_ERR_ERASE);
+				return -1;
+			}
 		}
-		return chug_flash_write(addr + CH_EEPROM_ADDR_WRDS, data, len);
+
+		/* write */
+		rc = chug_flash_write(addr + CH_EEPROM_ADDR_WRDS, data, len);
+		if (rc != 0) {
+			usb_dfu_set_status(DFU_STATUS_ERR_WRITE);
+			return -1;
+		}
+		return 0;
 	}
 
 	/* invalid */
@@ -150,15 +234,26 @@ chug_usb_dfu_write_callback(uint16_t addr, const uint8_t *data, uint16_t len, vo
 int8_t
 chug_usb_dfu_read_callback(uint16_t addr, uint8_t *data, uint16_t len, void *context)
 {
+	uint8_t rc;
+
+	/* invalid */
+	if (_alt_setting != 0x00)
+		return -1;
+
 	/* a USB reset will take us to firmware mode */
 	_did_upload_or_download = TRUE;
 
 	/* read from EEPROM */
-	if (_alt_setting == 0x00)
-		return chug_flash_read(addr + CH_EEPROM_ADDR_WRDS, data, len);
+	rc = chug_flash_read(addr + CH_EEPROM_ADDR_WRDS, data, len);
+	if (rc != CH_ERROR_NONE)
+		return -1;
 
-	/* invalid */
-	return -1;
+	/* re-encrypt */
+	if (chug_config_has_signing_key(&_cfg)) {
+		uint32_t *key = _cfg.signing_key;
+		chug_xtea_encode(key, data, len);
+	}
+	return 0;
 }
 
 /**
@@ -192,7 +287,7 @@ main(void)
 	 * set RB2 to input (h/w revision),
 	 * set RB3 to input (h/w revision),
 	 * set RB4 to input (SCL),
-	 * set RB5 to input (SDA),
+	 * set RB5 to input (SDA & Unlock),
 	 * set RB6 to input (PGC),
 	 * set RB7 to input (PGD) */
 	TRISB = 0b11111111;
@@ -226,8 +321,21 @@ main(void)
 	INTCONbits.GIE = 1;
 #endif
 
-	/* read config and boot to firmware mode if all okay */
+	/* read config */
 	chug_config_read(&_cfg);
+
+	/* if the unlock pins are jumpered then clear the signing keys */
+	if (PORTBbits.RB5 == 0) {
+		_cfg.signing_key[0] = 0x0;
+		_cfg.signing_key[1] = 0x0;
+		_cfg.signing_key[2] = 0x0;
+		_cfg.signing_key[3] = 0x0;
+		chug_config_write(&_cfg);
+		PORTE = 0x03;
+		while(1);
+	}
+
+	/* boot to firmware mode if all okay */
 	if (RCONbits.NOT_TO && RCONbits.NOT_RI && _cfg.flash_success == 0x01) {
 		PORTE = 0x03;
 		chug_boot_runtime();

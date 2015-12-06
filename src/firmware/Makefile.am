@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-all: firmware.dfu
+all: firmware.xdfu
 
 SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
@@ -52,11 +52,15 @@ firmware_CFLAGS =						\
 firmware.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(firmware_CFLAGS) ${SRC_C} -o$@
 firmware.dfu: firmware.hex Makefile
-	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 8000;		\
+	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 4000;		\
 	${DFUTOOL} set-vendor $@ 273f;				\
 	${DFUTOOL} set-product $@ 1002
-install-firmware: firmware.dfu Makefile
-	sudo ${DFUTOOL} --reset download $<
+firmware.xdfu: firmware.dfu Makefile
+	$(AM_V_GEN) ${DFUTOOL} encrypt $< $@ xtea `cat ~/.config/fwkey`
+install-firmware-unsigned: firmware.dfu Makefile
+	sudo ${DFUTOOL} write $< ;
+install-firmware: firmware.xdfu Makefile
+	sudo ${DFUTOOL} write $<
 
 CLEANFILES =							\
 	*.as							\

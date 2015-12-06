@@ -37,15 +37,17 @@
  * Do not remove or re-order items in this struct. Think of it like an ABI.
  **/
 typedef struct {
+	uint32_t	 signing_key[4];
 	uint32_t	 serial_number;
 	uint16_t	 pcb_errata;
 	uint8_t		 flash_success;
 	int32_t		 wavelength_cal[4];
-	uint8_t		 padding[33];
+	uint8_t		 padding[17];
 } CHugConfig;
 
 uint8_t		 chug_config_read		(CHugConfig	*cfg);
 uint8_t		 chug_config_write		(CHugConfig	*cfg);
+uint8_t		 chug_config_has_signing_key	(CHugConfig	*cfg);
 uint8_t		 chug_config_self_test		(void);
 
 #endif /* __CH_CONFIG_H */
