@@ -53,10 +53,13 @@ firmware.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(firmware_CFLAGS) ${SRC_C} -o$@
 firmware.dfu: firmware.hex Makefile
 	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 4000;		\
+	${DFUTOOL} set-metadata $@ License "GPL-2.0+";		\
+	${DFUTOOL} set-metadata $@ Copyright "Hughski Limited";	\
 	${DFUTOOL} set-vendor $@ 273f;				\
 	${DFUTOOL} set-product $@ 1002
 firmware.xdfu: firmware.dfu Makefile
-	$(AM_V_GEN) ${DFUTOOL} encrypt $< $@ xtea `cat ~/.config/fwkey`
+	$(AM_V_GEN) ${DFUTOOL} encrypt $< $@ xtea `cat ~/.config/fwkey`;\
+	${DFUTOOL} set-metadata $@ CipherKind XTEA
 install-firmware-unsigned: firmware.dfu Makefile
 	sudo ${DFUTOOL} write $< ;
 install-firmware: firmware.xdfu Makefile
