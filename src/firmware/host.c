@@ -19,12 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-//gcc -Wall -o host host.c ch-device.c `pkg-config gusb colord colorhug --libs --cflags` && ./host
+//gcc -Wall -o host host.c `pkg-config gusb colord colorhug --libs --cflags` && ./host
 
 #include <stdlib.h>
 #include <glib.h>
 
-#include "ch-device.h"
+#include <colord.h>
+#include <colorhug.h>
 
 /**
  * main:
@@ -37,7 +38,7 @@ main (int argc, char **argv)
 	gdouble cal[4];
 	gdouble temp = -1.f;
 	guint16 integration = 0xffff;
-	guint16 serial = 0xffff;
+	guint32 serial = 0xffff;
 	g_autofree gchar *str = NULL;
 	g_autoptr(CdColorXYZ) xyz = NULL;
 	g_autoptr(CdSpectrum) sp = NULL;
@@ -63,17 +64,6 @@ main (int argc, char **argv)
 	ret = ch_device_open_full (dev, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-
-	if (0) {
-		guint32 keys[4];
-		keys[0] = 0x47AC8203;
-		keys[1] = 0x93d8e9af;
-		keys[2] = 0x275fc2ba;
-		keys[3] = 0x95e20110;
-		ret = ch_device_set_crypto_key (dev, keys, NULL, &error);
-		g_assert_no_error (error);
-		g_assert (ret);
-	}
 
 	/* set the serial number and errata */
 	if (0) {
@@ -129,7 +119,7 @@ main (int argc, char **argv)
 
 if(0){
 	/* get XYZ */
-	xyz = ch_device_take_reading_xyz (dev, NULL, &error);
+	xyz = ch_device_take_reading_xyz (dev, 0, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (xyz != NULL);
 	g_print ("XYZ=%.2f,%.2f,%.2f\n", xyz->X, xyz->Y, xyz->Z);
