@@ -32,6 +32,7 @@ typedef enum {
 	CH_CMD_RESET			= 0x24,
 
 	/* read */
+	CH_CMD_GET_LEDS			= 0x0d,
 	CH_CMD_GET_SERIAL_NUMBER	= 0x0b,
 	CH_CMD_GET_PCB_ERRATA		= 0x33,
 	CH_CMD_GET_INTEGRAL_TIME	= 0x05,
@@ -39,6 +40,7 @@ typedef enum {
 	CH_CMD_READ_SRAM		= 0x38,
 
 	/* write */
+	CH_CMD_SET_LEDS			= 0x0e,
 	CH_CMD_SET_SERIAL_NUMBER	= 0x0c,
 	CH_CMD_SET_PCB_ERRATA		= 0x32,
 	CH_CMD_SET_INTEGRAL_TIME	= 0x06,

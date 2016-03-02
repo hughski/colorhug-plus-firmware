@@ -92,11 +92,34 @@ chug_set_leds_internal(uint8_t leds)
 }
 
 /**
+ * chug_set_leds:
+ **/
+static void
+chug_set_leds(uint8_t leds)
+{
+	_heartbeat_cnt = 0xffff;
+	chug_set_leds_internal(leds);
+}
+
+/**
+ * chug_get_leds_internal:
+ **/
+static uint8_t
+chug_get_leds_internal(void)
+{
+	return (PORTEbits.RE1 << 1) + PORTEbits.RE0;
+}
+
+/**
  * chug_heatbeat:
  **/
 static void
 chug_heatbeat(uint8_t leds)
 {
+	/* disabled */
+	if (_heartbeat_cnt == 0xffff)
+		return;
+
 	/* do pulse up -> down -> up */
 	if (_heartbeat_cnt <= 0xff) {
 		uint8_t j;
@@ -431,6 +454,10 @@ process_chug_setup_request(struct setup_packet *setup)
 		memcpy(_chug_buf, &_cfg.serial_number, 2);
 		usb_send_data_stage(_chug_buf, 2, _send_data_stage_cb, NULL);
 		return 0;
+	case CH_CMD_GET_LEDS:
+		_chug_buf[0] = chug_get_leds_internal();
+		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
+		return 0;
 	case CH_CMD_GET_PCB_ERRATA:
 		_chug_buf[0] = _cfg.pcb_errata;
 		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
@@ -458,6 +485,10 @@ process_chug_setup_request(struct setup_packet *setup)
 	case CH_CMD_SET_SERIAL_NUMBER:
 		_cfg.serial_number = setup->wValue;
 		chug_config_write(&_cfg);
+		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+		return 0;
+	case CH_CMD_SET_LEDS:
+		chug_set_leds(setup->wValue);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
 	case CH_CMD_SET_PCB_ERRATA:
