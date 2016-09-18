@@ -54,7 +54,8 @@ firmware_CFLAGS =						\
 firmware.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(firmware_CFLAGS) ${SRC_C} -o$@
 firmware.dfu: firmware.hex Makefile
-	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 4000;		\
+	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@;		\
+	${DFUTOOL} set-target-size $@ 4000;			\
 	${DFUTOOL} set-metadata $@ License "GPL-2.0+";		\
 	${DFUTOOL} set-metadata $@ Copyright "Hughski Limited";	\
 	${DFUTOOL} set-vendor $@ 273f;				\

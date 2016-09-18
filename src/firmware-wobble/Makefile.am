@@ -47,7 +47,8 @@ firmware_CFLAGS =						\
 firmware.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(firmware_CFLAGS) ${SRC_C} -o$@
 firmware.dfu: firmware.hex Makefile
-	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 8000;		\
+	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@;		\
+	${DFUTOOL} set-target-size $@ 8000;			\
 	${DFUTOOL} set-vendor $@ 273f;				\
 	${DFUTOOL} set-product $@ 1002
 install-firmware: firmware.dfu Makefile

@@ -49,7 +49,8 @@ install-bootloader: bootloader.hex
 	sudo ${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -f $< -b ${PK2CMD_DIR}/ -m -r
 
 %.dfu: %.hex
-	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@ 8000
+	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@;		\
+	${DFUTOOL} set-target-size $@ 4000
 
 CLEANFILES =							\
 	*.as							\
