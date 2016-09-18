@@ -33,6 +33,7 @@ typedef enum {
 
 	/* read */
 	CH_CMD_GET_LEDS			= 0x0d,
+	CH_CMD_GET_ILLUMINANTS		= 0x15,
 	CH_CMD_GET_SERIAL_NUMBER	= 0x0b,
 	CH_CMD_GET_PCB_ERRATA		= 0x33,
 	CH_CMD_GET_INTEGRAL_TIME	= 0x05,
@@ -41,6 +42,7 @@ typedef enum {
 
 	/* write */
 	CH_CMD_SET_LEDS			= 0x0e,
+	CH_CMD_SET_ILLUMINANTS		= 0x16,
 	CH_CMD_SET_SERIAL_NUMBER	= 0x0c,
 	CH_CMD_SET_PCB_ERRATA		= 0x32,
 	CH_CMD_SET_INTEGRAL_TIME	= 0x06,
@@ -73,6 +75,14 @@ typedef enum {
 	CH_STATUS_LED_RED		= 1 << 1,
 	CH_STATUS_LED_BLUE		= 1 << 2	/* Since: 0.1.29 */
 } ChStatusLed;
+
+/* Illuminants: possible bitfield values */
+typedef enum {
+	CH_ILLUMINANT_NONE		= 0,
+	CH_ILLUMINANT_A			= 1 << 0,
+	CH_ILLUMINANT_UV		= 1 << 1,
+	CH_ILLUMINANT_LAST
+} ChIlluminant;
 
 /* fatal error morse code */
 typedef enum {

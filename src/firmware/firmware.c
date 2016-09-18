@@ -111,6 +111,25 @@ chug_get_leds_internal(void)
 }
 
 /**
+ * chug_set_illuminants:
+ **/
+static void
+chug_set_illuminants(uint8_t illuminants)
+{
+	PORTCbits.RC0 = (illuminants & CH_ILLUMINANT_A);
+	PORTCbits.RC6 = (illuminants & CH_ILLUMINANT_UV) >> 1;
+}
+
+/**
+ * chug_get_illuminants:
+ **/
+static uint8_t
+chug_get_illuminants(void)
+{
+	return (PORTCbits.RC6 << 1) + PORTCbits.RC0;
+}
+
+/**
  * chug_heatbeat:
  **/
 static void
@@ -195,15 +214,18 @@ main(void)
 	while (ADCON0bits.GO);
 	ADCON1bits.ADCAL = 0;
 
-	//FIXME: new bootloader please..........................................................
-	TRISA = 0b11011101;
-	TRISC = 0b11011000;
-	TRISD = 0b11110100;
-	TRISE = 0b11111000;
-
 	/* power down sensor */
 	oo_elis1024_set_standby();
 #endif
+
+	//FIXME: new bootloader please..........................................................
+	TRISA = 0b11011101;
+	TRISC = 0b10111000;
+	TRISD = 0b11110100;
+	TRISE = 0b11111000;
+
+	/* ensure both UV and A illuminants turned off */
+	chug_set_illuminants(CH_ILLUMINANT_NONE);
 
 #ifdef HAVE_MCDC04
 	/* set up MCDC04 */
@@ -458,6 +480,10 @@ process_chug_setup_request(struct setup_packet *setup)
 		_chug_buf[0] = chug_get_leds_internal();
 		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
 		return 0;
+	case CH_CMD_GET_ILLUMINANTS:
+		_chug_buf[0] = chug_get_illuminants();
+		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
+		return 0;
 	case CH_CMD_GET_PCB_ERRATA:
 		_chug_buf[0] = _cfg.pcb_errata;
 		usb_send_data_stage(_chug_buf, 1, _send_data_stage_cb, NULL);
@@ -489,6 +515,10 @@ process_chug_setup_request(struct setup_packet *setup)
 		return 0;
 	case CH_CMD_SET_LEDS:
 		chug_set_leds(setup->wValue);
+		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+		return 0;
+	case CH_CMD_SET_ILLUMINANTS:
+		chug_set_illuminants(setup->wValue);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
 	case CH_CMD_SET_PCB_ERRATA:

@@ -296,11 +296,11 @@ main(void)
 	 * set RC1 to output (SCK2),
 	 * set RC2 to output (SDO2)
 	 * set RC3 to input (unused)
-	 * set RC4 to input (unused)
-	 * set RC5 to output (LED3)
-	 * set RC6 to input (unused
+	 * set RC4 to input (USB-)
+	 * set RC5 to input (USB+)
+	 * set RC6 to output (LED3)
 	 * set RC7 to input (unused) */
-	TRISC = 0b11011000;
+	TRISC = 0b10111000;
 
 	/* set RD0 to output (ELIS_RM),
 	/* set RD1 to output (ELIS_CLK),
