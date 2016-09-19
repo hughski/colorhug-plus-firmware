@@ -259,14 +259,15 @@ main(void)
 	return 0;
 }
 
-static void
+static int8_t
 _send_data_stage_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_INVALID_ADDRESS, FALSE);
-		return;
+		return -1;
 	}
+	return 0;
 }
 
 /**
@@ -312,14 +313,15 @@ chug_handle_read_sram(const struct setup_packet *setup)
 /**
  * _recieve_data_stage_cb:
  **/
-static void
+static int8_t
 _recieve_spectrum_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
-		return;
+		return -1;
 	}
+	return 1;
 }
 
 /**
@@ -348,18 +350,19 @@ chug_handle_write_sram(const struct setup_packet *setup)
 /**
  * _recieve_spectral_calibration_cb:
  **/
-static void
+static int8_t
 _recieve_spectral_calibration_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
-		return;
+		return -1;
 	}
 
 	/* save to EEPROM */
 	memcpy(_cfg.wavelength_cal, _chug_buf, sizeof(int32_t) * 4);
 	chug_config_write(&_cfg);
+	return 0;
 }
 
 /**
@@ -381,18 +384,19 @@ chug_handle_set_wavelength_calibration(const struct setup_packet *setup)
 /**
  * _recieve_crypto_key_cb:
  **/
-static void
+static int8_t
 _recieve_crypto_key_cb(bool transfer_ok, void *context)
 {
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
-		return;
+		return -1;
 	}
 
 	/* save to EEPROM */
 	memcpy(_cfg.signing_key, _chug_buf, sizeof(uint32_t) * 4);
 	chug_config_write(&_cfg);
+	return 0;
 }
 
 /**
