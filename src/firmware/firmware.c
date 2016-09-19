@@ -199,8 +199,8 @@ main(void)
 	/* set up the ADC */
 	//ADCON0bits.VCFG1 = 1;		/* Vref- (AN2) */
 	//ADCON0bits.VCFG0 = 1;		/* Vref+ (AN3) */
-	ADCON0bits.VCFG1 = 0;//FIXME: only until we have resitors
-	ADCON0bits.VCFG0 = 0;//FIXME: only until we have resitors
+	ADCON0bits.VCFG1 = 0;		/* no hardware VRef- */
+	ADCON0bits.VCFG0 = 0;		/* no hardware VRef+ */
 	ADCON0bits.CHS = 0b0000;	/* input (AN0) */
 	ADCON0bits.ADON = 1;		/* enable module */
 	ADCON1bits.ACQT = 0b111;	/* A/D Acquisition Time Select (FIXME: can we disable this?) */
