@@ -51,11 +51,6 @@ mti_23k640_enable (void)
 	PORTDbits.RD3 = 0;
 }
 
-/**
- * mti_23k640_disable:
- *
- * This asserts the SS2/SSDMA/_CS line.
- **/
 static void
 mti_23k640_disable (void)
 {
@@ -97,10 +92,6 @@ mti_23k640_write_byte (uint16_t addr, uint8_t data)
 	mti_23k640_disable();
 }
 
-/**
- * mti_23k640_read_byte:
- * This blocks for the duration of the transfer.
- **/
 uint8_t
 mti_23k640_read_byte (uint16_t addr)
 {
@@ -148,9 +139,6 @@ CHugSramDmaCheck (void)
 	return TRUE;
 }
 
-/**
- * mti_23k640_dma_from_cpu_prep:
- **/
 void
 mti_23k640_dma_from_cpu_prep (void)
 {
@@ -164,9 +152,6 @@ mti_23k640_dma_from_cpu_prep (void)
 	mti_23k640_set_mode(MTI_23K640_MODE_SEQUENTIAL);
 }
 
-/**
- * mti_23k640_dma_from_cpu_exec:
- **/
 void
 mti_23k640_dma_from_cpu_exec (const uint8_t *addr_cpu, uint16_t addr_ram, uint16_t length)
 {
@@ -201,9 +186,6 @@ mti_23k640_dma_from_cpu (const uint8_t *addr_cpu, uint16_t addr_ram, uint16_t le
 	mti_23k640_dma_from_cpu_exec(addr_cpu, addr_ram, length);
 }
 
-/**
- * mti_23k640_dma_to_cpu_prep:
- **/
 void
 mti_23k640_dma_to_cpu_prep (void)
 {
@@ -217,9 +199,6 @@ mti_23k640_dma_to_cpu_prep (void)
 	mti_23k640_set_mode(MTI_23K640_MODE_SEQUENTIAL);
 }
 
-/**
- * mti_23k640_dma_to_cpu_exec:
- **/
 void
 mti_23k640_dma_to_cpu_exec (uint16_t addr_ram, uint8_t *addr_cpu, uint16_t length)
 {
@@ -254,11 +233,6 @@ mti_23k640_dma_to_cpu (uint16_t addr_ram, uint8_t *addr_cpu, uint16_t length)
 	mti_23k640_dma_to_cpu_exec(addr_ram, addr_cpu, length);
 }
 
-/**
- * mti_23k640_wipe:
- *
- * Wipe the SRAM so that it contains known data.
- **/
 void
 mti_23k640_wipe (uint16_t addr, uint16_t length)
 {
@@ -278,9 +252,6 @@ mti_23k640_wipe (uint16_t addr, uint16_t length)
 	}
 }
 
-/**
- * mti_23k640_self_test:
- **/
 int8_t
 mti_23k640_self_test(void)
 {

@@ -47,9 +47,6 @@ typedef enum {
 	MZT_MCDC04_MEASURE_ADDR_OUTINT		= 0x04	/* ro */
 } Mcdc04MeasureAddr;
 
-/**
- * mzt_mcdc04_init:
- **/
 void
 mzt_mcdc04_init(MztMcdc04Context *ctx)
 {
@@ -58,27 +55,18 @@ mzt_mcdc04_init(MztMcdc04Context *ctx)
 	ctx->div = MZT_MCDC04_DIV_DISABLE;
 }
 
-/**
- * mzt_mcdc04_set_tint:
- **/
 void
 mzt_mcdc04_set_tint(MztMcdc04Context *ctx, MztMcdc04Tint tint)
 {
 	ctx->tint = tint;
 }
 
-/**
- * mzt_mcdc04_set_iref:
- **/
 void
 mzt_mcdc04_set_iref(MztMcdc04Context *ctx, MztMcdc04Iref iref)
 {
 	ctx->iref = iref;
 }
 
-/**
- * mzt_mcdc04_set_iref:
- **/
 void
 mzt_mcdc04_set_div(MztMcdc04Context *ctx, MztMcdc04Div div)
 {
@@ -169,9 +157,6 @@ out:
 	return rc;
 }
 
-/**
- * mzt_mcdc04_take_readings_raw:
- **/
 ChError
 mzt_mcdc04_take_readings_raw(MztMcdc04Context *ctx,
 			     int32_t *x, int32_t *y, int32_t *z)

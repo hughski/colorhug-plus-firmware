@@ -95,9 +95,6 @@ static CHugConfig _cfg;
  *
  */
 
-/**
- * chug_boot_runtime:
- **/
 static void
 chug_boot_runtime(void)
 {
@@ -113,9 +110,6 @@ chug_boot_runtime(void)
 #define XTEA_DELTA		0x9e3779b9
 #define XTEA_NUM_ROUNDS		32
 
-/**
- * chug_xtea_encode:
- **/
 static void
 chug_xtea_encode (const uint32_t key[4], uint8_t *data, uint16_t length)
 {
@@ -140,9 +134,6 @@ chug_xtea_encode (const uint32_t key[4], uint8_t *data, uint16_t length)
 	}
 }
 
-/**
- * chug_xtea_decode:
- **/
 static void
 chug_xtea_decode (const uint32_t key[4], uint8_t *data, uint16_t length)
 {
@@ -167,9 +158,6 @@ chug_xtea_decode (const uint32_t key[4], uint8_t *data, uint16_t length)
 	}
 }
 
-/**
- * chug_usb_dfu_write_callback:
- **/
 int8_t
 chug_usb_dfu_write_callback(uint16_t addr, uint8_t *data, uint16_t len, void *context)
 {
@@ -228,9 +216,6 @@ chug_usb_dfu_write_callback(uint16_t addr, uint8_t *data, uint16_t len, void *co
 	return -1;
 }
 
-/**
- * chug_usb_dfu_read_callback:
- **/
 int8_t
 chug_usb_dfu_read_callback(uint16_t addr, uint8_t *data, uint16_t len, void *context)
 {
@@ -256,9 +241,6 @@ chug_usb_dfu_read_callback(uint16_t addr, uint8_t *data, uint16_t len, void *con
 	return 0;
 }
 
-/**
- * main:
- **/
 int
 main(void)
 {
@@ -370,18 +352,12 @@ main(void)
 	return 0;
 }
 
-/**
- * chug_unknown_setup_request_callback:
- **/
 int8_t
 chug_unknown_setup_request_callback(const struct setup_packet *setup)
 {
 	return process_dfu_setup_request(setup);
 }
 
-/**
- * chug_usb_reset_callback:
- **/
 void
 chug_usb_reset_callback(void)
 {
@@ -390,9 +366,6 @@ chug_usb_reset_callback(void)
 		_do_reset = TRUE;
 }
 
-/**
- * isr:
- **/
 void interrupt high_priority
 isr()
 {

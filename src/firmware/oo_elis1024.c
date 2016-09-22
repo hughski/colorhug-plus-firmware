@@ -32,9 +32,6 @@
 //#define PIN_M0		PORTEbits.RE0
 //#define PIN_M1		PORTEbits.RE0
 
-/**
- * oo_elis1024_set_standby:
- **/
 void
 oo_elis1024_set_standby(void)
 {
@@ -43,9 +40,6 @@ oo_elis1024_set_standby(void)
 	PIN_CLK = 0;
 }
 
-/**
- * oo_elis1024_wait_us:
- **/
 static void
 oo_elis1024_wait_us(uint16_t cnt)
 {
@@ -54,9 +48,6 @@ oo_elis1024_wait_us(uint16_t cnt)
 		CLRWDT();
 }
 
-/**
- * oo_elis1024_take_sample:
- **/
 void
 oo_elis1024_take_sample(uint16_t integration_time)
 {

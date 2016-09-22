@@ -34,9 +34,6 @@
 
 static CHugConfig _cfg;
 
-/**
- * chug_usb_dfu_set_success_callback:
- **/
 void
 chug_usb_dfu_set_success_callback(void *context)
 {
@@ -50,9 +47,6 @@ chug_usb_dfu_set_success_callback(void *context)
 	}
 }
 
-/**
- * chug_unknown_setup_request_callback:
- **/
 int
 main(void)
 {

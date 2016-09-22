@@ -22,11 +22,6 @@
 #include "ch-flash.h"
 #include "ch-errno.h"
 
-/**
- * chug_flash_load_table_at_addr:
- *
- * TBLPTR is a special 22 bit register, and we can't use memcpy
- **/
 static void
 chug_flash_load_table_at_addr(uint32_t addr)
 {
@@ -37,11 +32,6 @@ chug_flash_load_table_at_addr(uint32_t addr)
 	TBLPTRL = tmp.byte.LB;
 }
 
-/**
- * chug_flash_erase:
- * @addr: is address to the WORD, not bytes, i.e. 0x4000->0x7fff
- *
- **/
 uint8_t
 chug_flash_erase(uint16_t addr, uint16_t len)
 {
@@ -75,9 +65,6 @@ chug_flash_erase(uint16_t addr, uint16_t len)
 }
 
 
-/**
- * chug_flash_write:
- **/
 uint8_t
 chug_flash_write(uint16_t addr, const uint8_t *data, uint16_t len)
 {
@@ -120,9 +107,6 @@ chug_flash_write(uint16_t addr, const uint8_t *data, uint16_t len)
 	return CH_ERROR_NONE;
 }
 
-/**
- * chug_flash_read:
- **/
 uint8_t
 chug_flash_read(uint16_t addr, uint8_t *data, uint16_t len)
 {

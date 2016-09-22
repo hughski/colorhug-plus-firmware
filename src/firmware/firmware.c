@@ -48,9 +48,6 @@ static uint16_t			 _heartbeat_cnt = 0;
 MztMcdc04Context		 _mcdc04_ctx;
 #endif
 
-/**
- * chug_usb_dfu_set_success_callback:
- **/
 void
 chug_usb_dfu_set_success_callback(void *context)
 {
@@ -64,9 +61,6 @@ chug_usb_dfu_set_success_callback(void *context)
 	}
 }
 
-/**
- * chug_set_error:
- **/
 static void
 chug_set_error(ChCmd cmd, ChError status)
 {
@@ -74,9 +68,6 @@ chug_set_error(ChCmd cmd, ChError status)
 	_last_error_cmd = cmd;
 }
 
-/**
- * chug_set_leds_internal:
- **/
 static void
 chug_set_leds_internal(uint8_t leds)
 {
@@ -91,9 +82,6 @@ chug_set_leds_internal(uint8_t leds)
 	}
 }
 
-/**
- * chug_set_leds:
- **/
 static void
 chug_set_leds(uint8_t leds)
 {
@@ -101,18 +89,12 @@ chug_set_leds(uint8_t leds)
 	chug_set_leds_internal(leds);
 }
 
-/**
- * chug_get_leds_internal:
- **/
 static uint8_t
 chug_get_leds_internal(void)
 {
 	return (PORTEbits.RE1 << 1) + PORTEbits.RE0;
 }
 
-/**
- * chug_set_illuminants:
- **/
 static void
 chug_set_illuminants(uint8_t illuminants)
 {
@@ -120,18 +102,12 @@ chug_set_illuminants(uint8_t illuminants)
 	PORTCbits.RC6 = (illuminants & CH_ILLUMINANT_UV) >> 1;
 }
 
-/**
- * chug_get_illuminants:
- **/
 static uint8_t
 chug_get_illuminants(void)
 {
 	return (PORTCbits.RC6 << 1) + PORTCbits.RC0;
 }
 
-/**
- * chug_heatbeat:
- **/
 static void
 chug_heatbeat(uint8_t leds)
 {
@@ -158,9 +134,6 @@ chug_heatbeat(uint8_t leds)
 
 #define HAVE_TESTS
 
-/**
- * main:
- **/
 int
 main(void)
 {
@@ -270,9 +243,6 @@ _send_data_stage_cb(bool transfer_ok, void *context)
 	return 0;
 }
 
-/**
- * chug_handle_get_temperature:
- **/
 static int8_t
 chug_handle_get_temperature(void)
 {
@@ -294,9 +264,6 @@ chug_handle_get_temperature(void)
 #endif
 }
 
-/**
- * chug_handle_read_sram:
- **/
 static int8_t
 chug_handle_read_sram(const struct setup_packet *setup)
 {
@@ -310,9 +277,6 @@ chug_handle_read_sram(const struct setup_packet *setup)
 	return 0;
 }
 
-/**
- * _recieve_data_stage_cb:
- **/
 static int8_t
 _recieve_spectrum_cb(bool transfer_ok, void *context)
 {
@@ -324,9 +288,6 @@ _recieve_spectrum_cb(bool transfer_ok, void *context)
 	return 1;
 }
 
-/**
- * chug_handle_write_sram:
- **/
 static int8_t
 chug_handle_write_sram(const struct setup_packet *setup)
 {
@@ -347,9 +308,6 @@ chug_handle_write_sram(const struct setup_packet *setup)
 	return -1;
 }
 
-/**
- * _recieve_spectral_calibration_cb:
- **/
 static int8_t
 _recieve_spectral_calibration_cb(bool transfer_ok, void *context)
 {
@@ -365,9 +323,6 @@ _recieve_spectral_calibration_cb(bool transfer_ok, void *context)
 	return 0;
 }
 
-/**
- * chug_handle_set_wavelength_calibration:
- **/
 static int8_t
 chug_handle_set_wavelength_calibration(const struct setup_packet *setup)
 {
@@ -381,9 +336,6 @@ chug_handle_set_wavelength_calibration(const struct setup_packet *setup)
 	return 0;
 }
 
-/**
- * _recieve_crypto_key_cb:
- **/
 static int8_t
 _recieve_crypto_key_cb(bool transfer_ok, void *context)
 {
@@ -399,9 +351,6 @@ _recieve_crypto_key_cb(bool transfer_ok, void *context)
 	return 0;
 }
 
-/**
- * chug_handle_set_crypto_key:
- **/
 static int8_t
 chug_handle_set_crypto_key(const struct setup_packet *setup)
 {
@@ -422,9 +371,6 @@ chug_handle_set_crypto_key(const struct setup_packet *setup)
 	return 0;
 }
 
-/**
- * chug_handle_take_reading_spectral:
- **/
 static int8_t
 chug_handle_take_reading_spectral(const struct setup_packet *setup)
 {
@@ -433,9 +379,6 @@ chug_handle_take_reading_spectral(const struct setup_packet *setup)
 	return 0;
 }
 
-/**
- * chug_handle_take_reading_xyz:
- **/
 static int8_t
 chug_handle_take_reading_xyz(const struct setup_packet *setup)
 {
@@ -459,9 +402,6 @@ chug_handle_take_reading_xyz(const struct setup_packet *setup)
 #endif
 }
 
-/**
- * process_chug_setup_request:
- **/
 int8_t
 process_chug_setup_request(struct setup_packet *setup)
 {
@@ -557,9 +497,6 @@ process_chug_setup_request(struct setup_packet *setup)
 	return -1;
 }
 
-/**
- * chug_unknown_setup_request_callback:
- **/
 int8_t
 chug_unknown_setup_request_callback(const struct setup_packet *setup)
 {
@@ -570,9 +507,6 @@ chug_unknown_setup_request_callback(const struct setup_packet *setup)
 	return -1;
 }
 
-/**
- * chug_usb_reset_callback:
- **/
 void
 chug_usb_reset_callback(void)
 {
@@ -581,9 +515,6 @@ chug_usb_reset_callback(void)
 		RESET();
 }
 
-/**
- * isr:
- **/
 void interrupt high_priority
 isr()
 {

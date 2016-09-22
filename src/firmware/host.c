@@ -27,9 +27,6 @@
 #include <colord.h>
 #include <colorhug.h>
 
-/**
- * main:
- **/
 int
 main (int argc, char **argv)
 {

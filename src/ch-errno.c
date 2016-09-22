@@ -23,9 +23,6 @@
 
 #include "ch-errno.h"
 
-/**
- * _led_delay:
- **/
 static void
 _led_delay(void)
 {
@@ -34,9 +31,6 @@ _led_delay(void)
 		CLRWDT();
 }
 
-/**
- * chug_errno_show:
- **/
 void
 chug_errno_show(ChError errno, uint8_t is_fatal)
 {

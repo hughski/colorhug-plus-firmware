@@ -27,9 +27,6 @@
 
 #define CH_CONFIG_ADDRESS_WRDS		0x3e00
 
-/**
- * chug_config_read:
- **/
 uint8_t
 chug_config_read(CHugConfig *cfg)
 {
@@ -48,9 +45,6 @@ chug_config_read(CHugConfig *cfg)
 	return CH_ERROR_NONE;
 }
 
-/**
- * chug_config_write:
- **/
 uint8_t
 chug_config_write(CHugConfig *cfg)
 {
@@ -63,9 +57,6 @@ chug_config_write(CHugConfig *cfg)
 	return chug_flash_write(CH_CONFIG_ADDRESS_WRDS, (uint8_t *) cfg, sizeof(CHugConfig));
 }
 
-/**
- * chug_config_has_signing_key:
- **/
 uint8_t
 chug_config_has_signing_key(CHugConfig *cfg)
 {
@@ -77,9 +68,6 @@ chug_config_has_signing_key(CHugConfig *cfg)
 	return FALSE;
 }
 
-/**
- * chug_config_self_test:
- **/
 uint8_t
 chug_config_self_test (void)
 {

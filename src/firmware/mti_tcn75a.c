@@ -24,9 +24,6 @@
 #include "mti_tcn75a.h"
 #include "ch-errno.h"
 
-/**
- * mti_tcn75a_set_resolution:
- **/
 uint8_t
 mti_tcn75a_set_resolution(MtiTcn75aResolution resolution)
 {
@@ -61,9 +58,6 @@ out:
 	return rc;
 }
 
-/**
- * mti_tcn75a_get_temperature:
- **/
 uint8_t
 mti_tcn75a_get_temperature(int32_t *result)
 {
