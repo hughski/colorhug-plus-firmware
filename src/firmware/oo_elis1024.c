@@ -26,7 +26,7 @@
 
 #define PIN_CLK			PORTDbits.RD1
 #define PIN_DATA		PORTAbits.RA5
-#define PIN_RM			PORTDbits.RD2
+#define PIN_RM			PORTDbits.RD0
 #define PIN_RST			PORTEbits.RE2
 #define PIN_SHT			PORTAbits.RA1
 
@@ -46,22 +46,30 @@ oo_elis1024_wait_us(uint16_t cnt)
 		CLRWDT();
 }
 
-void
-oo_elis1024_take_sample(uint16_t integration_time)
+static void
+oo_elis1024_wait_ms(uint16_t cnt)
+{
+	for (;cnt > 0; cnt--)
+		oo_elis1024_wait_us(996);
+}
+
+/*
+ * @integration_time: in ms
+ *
+ * The ELIS is always run with M0=M1=0 which puts it in 1024 pixel mode and
+ * is used with Frame Mode Timing, where RM=0
+ */
+uint8_t
+oo_elis1024_take_sample(uint16_t integration_time, uint16_t offset)
 {
 	uint16_t i;
-	uint16_t offset = 0;
-	uint32_t dma_buf = 0x0;
+	uint16_t dma_buf = 0x0;
 
 	/* device reset */
 	PIN_DATA = 0;
-	PIN_SHT = 1;
 	PIN_CLK = 0;
 	PIN_RST = 1;
 	PIN_RM = 0;
-
-//FIXME
-integration_time = 10000000;
 
 	/* PIN_RST needs to be high for at least 200ns */
 	for (i = 0; i < 10; i++) {
@@ -73,7 +81,8 @@ integration_time = 10000000;
 
 	/* start integration */
 	PIN_RST = 0;
-	oo_elis1024_wait_us(integration_time);
+	PIN_SHT = 1;
+	oo_elis1024_wait_ms(integration_time);
 	PIN_SHT = 0;
 
 	/* get first pixel from device */
@@ -92,7 +101,7 @@ integration_time = 10000000;
 		while (ADCON0bits.GO);
 		mti_23k640_dma_wait();
 
-		//FIXME: about half way throughout aquasiton
+		//FIXME: about half way throughout acquisition
 		PIN_CLK = 0;
 
 		/* this is high for the first clock cycle */
@@ -101,10 +110,11 @@ integration_time = 10000000;
 		/* save to SRAM */
 		dma_buf = ADRES;
 		mti_23k640_dma_from_cpu_exec((const uint8_t *) &dma_buf,
-					     offset, sizeof(uint32_t));
-		offset += 4;
+					     offset, sizeof(uint16_t));
+		offset += 2;
 	}
 
 	/* wait for the last write to complete */
 	mti_23k640_dma_wait();
+	return 0;
 }

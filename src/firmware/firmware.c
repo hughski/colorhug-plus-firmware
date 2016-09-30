@@ -170,10 +170,8 @@ main(void)
 
 #ifdef HAVE_ELIS1024
 	/* set up the ADC */
-	//ADCON0bits.VCFG1 = 1;		/* Vref- (AN2) */
-	//ADCON0bits.VCFG0 = 1;		/* Vref+ (AN3) */
-	ADCON0bits.VCFG1 = 0;		/* no hardware VRef- */
-	ADCON0bits.VCFG0 = 0;		/* no hardware VRef+ */
+	ADCON0bits.VCFG1 = 0;		/* reference is VSS, no hardware VRef- */
+	ADCON0bits.VCFG0 = 0;		/* reference is VDD, no hardware VRef+ */
 	ADCON0bits.CHS = 0b0000;	/* input (AN0) */
 	ADCON0bits.ADON = 1;		/* enable module */
 	ADCON1bits.ACQT = 0b111;	/* A/D Acquisition Time Select (FIXME: can we disable this?) */
@@ -374,7 +372,13 @@ chug_handle_set_crypto_key(const struct setup_packet *setup)
 static int8_t
 chug_handle_take_reading_spectral(const struct setup_packet *setup)
 {
-	oo_elis1024_take_sample(1024);
+	ChError rc;
+	uint16_t offset = 0;
+	rc = oo_elis1024_take_sample(_integration_time, offset);
+	if (rc != CH_ERROR_NONE) {
+		chug_set_error(CH_CMD_TAKE_READING_SPECTRAL, rc);
+		return -1;
+	}
 	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 	return 0;
 }

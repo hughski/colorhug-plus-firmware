@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 void	 oo_elis1024_set_standby		(void);
-void	 oo_elis1024_take_sample		(uint16_t	 integration_time);
+uint8_t	 oo_elis1024_take_sample		(uint16_t	 integration_time,
+						 uint16_t	 offset);
 
 #endif /* __OO_ELIS1024_H */
