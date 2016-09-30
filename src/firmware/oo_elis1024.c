@@ -29,8 +29,6 @@
 #define PIN_RM			PORTDbits.RD2
 #define PIN_RST			PORTEbits.RE2
 #define PIN_SHT			PORTAbits.RA1
-//#define PIN_M0		PORTEbits.RE0
-//#define PIN_M1		PORTEbits.RE0
 
 void
 oo_elis1024_set_standby(void)
@@ -54,9 +52,6 @@ oo_elis1024_take_sample(uint16_t integration_time)
 	uint16_t i;
 	uint16_t offset = 0;
 	uint32_t dma_buf = 0x0;
-
-//	PIN_M0 = 0; /* 1024 pixel mode */
-//	PIN_M1 = 0;
 
 	/* device reset */
 	PIN_DATA = 0;
