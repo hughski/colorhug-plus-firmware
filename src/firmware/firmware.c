@@ -265,11 +265,12 @@ chug_handle_get_temperature(void)
 static int8_t
 chug_handle_read_sram(const struct setup_packet *setup)
 {
-	memset(_chug_buf, 0x00, setup->wLength);
 #ifdef HAVE_SRAM
 	mti_23k640_dma_to_cpu(setup->wValue * CH_EP0_TRANSFER_SIZE,
 			      _chug_buf,
 			      setup->wLength);
+#else
+	memset(_chug_buf, 0x00, setup->wLength);
 #endif
 	usb_send_data_stage(_chug_buf, CH_EP0_TRANSFER_SIZE, _send_data_stage_cb, NULL);
 	return 0;
