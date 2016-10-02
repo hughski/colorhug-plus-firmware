@@ -123,7 +123,7 @@ mti_23k640_dma_wait (void)
 }
 
 /**
- * CHugSramDmaCheck:
+ * mti_23k640_dma_check:
  *
  * Check to see if the DMA transfer has finished, and if so then
  * disable the SRAM.
@@ -131,7 +131,7 @@ mti_23k640_dma_wait (void)
  * Return value: TRUE if the DMA transfer has finished.
  **/
 uint8_t
-CHugSramDmaCheck (void)
+mti_23k640_dma_check (void)
 {
 	if (DMACON1bits.DMAEN)
 		return FALSE;
