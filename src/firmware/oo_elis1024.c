@@ -65,6 +65,9 @@ oo_elis1024_take_sample(uint16_t integration_time, uint16_t offset)
 	uint16_t i;
 	uint16_t dma_buf = 0x0;
 
+	/* we read the pixels backwards */
+	offset += 1023 * 2;
+
 	/* device reset */
 	PIN_DATA = 0;
 	PIN_CLK = 0;
@@ -111,7 +114,7 @@ oo_elis1024_take_sample(uint16_t integration_time, uint16_t offset)
 		dma_buf = ADRES;
 		mti_23k640_dma_from_cpu_exec((const uint8_t *) &dma_buf,
 					     offset, sizeof(uint16_t));
-		offset += 2;
+		offset -= 2;
 	}
 
 	/* wait for the last write to complete */
