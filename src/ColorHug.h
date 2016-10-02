@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 
-#define CH_EP0_TRANSFER_SIZE		64
+#define CH_EP0_TRANSFER_SIZE		0x400
 #define CH_USB_INTERFACE		0x00
 
 typedef enum {
