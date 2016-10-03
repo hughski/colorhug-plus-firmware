@@ -410,6 +410,8 @@ chug_handle_take_reading_xyz(const struct setup_packet *setup)
 int8_t
 process_chug_setup_request(struct setup_packet *setup)
 {
+	int32_t tmp;
+
 	if (setup->REQUEST.destination != DEST_INTERFACE)
 		return -1;
 	if (setup->REQUEST.type != REQUEST_TYPE_CLASS)
@@ -446,6 +448,18 @@ process_chug_setup_request(struct setup_packet *setup)
 	case CH_CMD_GET_CCD_CALIBRATION:
 		memcpy(_chug_buf, _cfg.wavelength_cal, sizeof(int32_t) * 4);
 		usb_send_data_stage(_chug_buf, sizeof(int32_t) * 4,
+				    _send_data_stage_cb, NULL);
+		return 0;
+	case CH_CMD_GET_ADC_CALIBRATION_POS:
+		tmp = 0xf332; /* 0.95 * 0xffff */
+		memcpy(_chug_buf, &tmp, sizeof(int32_t));
+		usb_send_data_stage(_chug_buf, sizeof(int32_t),
+				    _send_data_stage_cb, NULL);
+		return 0;
+	case CH_CMD_GET_ADC_CALIBRATION_NEG:
+		tmp = 0xcccc; /* 0.80 * 0xffff */
+		memcpy(_chug_buf, &tmp, sizeof(int32_t));
+		usb_send_data_stage(_chug_buf, sizeof(int32_t),
 				    _send_data_stage_cb, NULL);
 		return 0;
 	case CH_CMD_GET_TEMPERATURE:
