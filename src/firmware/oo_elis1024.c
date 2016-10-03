@@ -84,9 +84,14 @@ oo_elis1024_take_sample(uint16_t integration_time, uint16_t offset)
 
 	/* start integration */
 	PIN_RST = 0;
-	PIN_SHT = 1;
-	oo_elis1024_wait_ms(integration_time);
-	PIN_SHT = 0;
+	if (integration_time > 0) {
+		PIN_SHT = 1;
+		oo_elis1024_wait_ms(integration_time);
+		PIN_SHT = 0;
+	} else {
+		PIN_SHT = 1;
+		PIN_SHT = 0;
+	}
 
 	/* get first pixel from device */
 	PIN_DATA = 1;
