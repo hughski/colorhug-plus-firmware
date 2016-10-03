@@ -491,7 +491,6 @@ process_chug_setup_request(struct setup_packet *setup)
 		chug_set_error(CH_CMD_LAST, CH_ERROR_NONE);
 		usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 		return 0;
-	case 0x51:	//FIXME: I have no idea!!!
 	case CH_CMD_TAKE_READING_SPECTRAL:
 		return chug_handle_take_reading_spectral(setup);
 	case CH_CMD_TAKE_READING_XYZ:
