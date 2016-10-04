@@ -375,6 +375,8 @@ chug_handle_take_reading_spectral(const struct setup_packet *setup)
 {
 	ChError rc;
 	uint16_t offset = 0;
+
+	chug_set_leds(0);
 	rc = oo_elis1024_take_sample(_integration_time, offset);
 	if (rc != CH_ERROR_NONE) {
 		chug_set_error(CH_CMD_TAKE_READING_SPECTRAL, rc);
