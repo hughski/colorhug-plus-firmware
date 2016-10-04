@@ -24,8 +24,8 @@
 #include "oo_elis1024.h"
 #include "mti_23k640.h"
 
-#define PIN_CLK			PORTDbits.RD1
-#define PIN_DATA		PORTAbits.RA5
+#define PIN_CLK			PORTCbits.RC6
+#define PIN_DATA		PORTDbits.RD1
 #define PIN_RM			PORTDbits.RD0
 #define PIN_RST			PORTEbits.RE2
 #define PIN_SHT			PORTAbits.RA1

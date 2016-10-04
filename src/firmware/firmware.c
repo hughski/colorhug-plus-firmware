@@ -99,7 +99,7 @@ static void
 chug_set_illuminants(uint8_t illuminants)
 {
 	PORTCbits.RC0 = (illuminants & CH_ILLUMINANT_A);
-	PORTCbits.RC6 = (illuminants & CH_ILLUMINANT_UV) >> 1;
+	PORTAbits.RA5 = (illuminants & CH_ILLUMINANT_UV) >> 1;
 }
 
 static uint8_t
@@ -451,13 +451,13 @@ process_chug_setup_request(struct setup_packet *setup)
 				    _send_data_stage_cb, NULL);
 		return 0;
 	case CH_CMD_GET_ADC_CALIBRATION_POS:
-		tmp = 0xf332; /* 0.95 * 0xffff */
+		tmp = 0xbfff; /* 0.75 * 0xffff */
 		memcpy(_chug_buf, &tmp, sizeof(int32_t));
 		usb_send_data_stage(_chug_buf, sizeof(int32_t),
 				    _send_data_stage_cb, NULL);
 		return 0;
 	case CH_CMD_GET_ADC_CALIBRATION_NEG:
-		tmp = 0xcccc; /* 0.80 * 0xffff */
+		tmp = 0x1999; /* 0.10 * 0xffff */
 		memcpy(_chug_buf, &tmp, sizeof(int32_t));
 		usb_send_data_stage(_chug_buf, sizeof(int32_t),
 				    _send_data_stage_cb, NULL);
