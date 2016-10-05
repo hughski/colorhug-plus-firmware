@@ -61,6 +61,9 @@ bootloader.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(bootloader_CFLAGS) ${SRC_C} -o$@
 install-bootloader: bootloader.hex
 	sudo ${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -f $< -b ${PK2CMD_DIR}/ -m -r
+dump:
+	sudo ${PK2CMD_DIR}/pk2cmd -pPIC18F46J50 -b ${PK2CMD_DIR}/ -GFbackup.hex -r;
+	dfu-tool convert raw backup.hex backup.raw
 
 %.dfu: %.hex
 	$(AM_V_GEN) ${DFUTOOL} convert dfu $< $@;		\
