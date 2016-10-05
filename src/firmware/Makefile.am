@@ -48,8 +48,8 @@ firmware_CFLAGS =						\
 	-I$(top_builddir)					\
 	-I$(top_srcdir)/src					\
 	-I$(top_srcdir)/src/m-stack/usb/include			\
-	--codeoffset=0x4000					\
-	--rom=0x4000-0x8000					\
+	--codeoffset=0x8000					\
+	--rom=0x8000-0xfbff					\
 	${CFLAGS}
 firmware.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(firmware_CFLAGS) ${SRC_C} -o$@

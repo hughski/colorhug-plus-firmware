@@ -25,7 +25,7 @@
 #include "ch-errno.h"
 #include "ch-flash.h"
 
-#define CH_CONFIG_ADDRESS_WRDS		0x3e00
+#define CH_CONFIG_ADDRESS_WRDS		0x5c00
 
 uint8_t
 chug_config_read(CHugConfig *cfg)

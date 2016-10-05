@@ -39,7 +39,7 @@ chug_flash_erase(uint16_t addr, uint16_t len)
 	uint8_t enable_int = FALSE;
 
 	/* check this is aligned */
-	if (addr % (CH_FLASH_ERASE_BLOCK_SIZE / 2) > 0)
+	if (addr % CH_FLASH_ERASE_BLOCK_SIZE > 0)
 		return CH_ERROR_INVALID_ADDRESS;
 
 	/* disable interrupts if set */
@@ -73,7 +73,7 @@ chug_flash_write(uint16_t addr, const uint8_t *data, uint16_t len)
 	uint8_t enable_int = FALSE;
 
 	/* check this is aligned */
-	if (addr % (CH_FLASH_WRITE_BLOCK_SIZE / 2) > 0)
+	if (addr % CH_FLASH_WRITE_BLOCK_SIZE > 0)
 		return CH_ERROR_INVALID_ADDRESS;
 
 	/* disable interrupts if set */

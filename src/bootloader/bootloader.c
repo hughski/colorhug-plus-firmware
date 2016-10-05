@@ -76,7 +76,7 @@ static CHugConfig _cfg;
 
 #define CH_STATUS_LED_RED		0x02
 #define CH_STATUS_LED_GREEN		0x01
-#define CH_EEPROM_ADDR_WRDS		0x4000
+#define CH_EEPROM_ADDR_WRDS		0x8000
 
 /* This is the state machine used to switch between the different bootloader
  * and firmware modes:
@@ -103,7 +103,7 @@ chug_boot_runtime(void)
 	chug_flash_read(CH_EEPROM_ADDR_WRDS, (uint8_t *) &runcode_start, 2);
 	if (runcode_start == 0xffff)
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, TRUE);
-	asm("ljmp 0x4000");
+	asm("ljmp 0x8000");
 	chug_errno_show(CH_ERROR_NOT_IMPLEMENTED, TRUE);
 }
 

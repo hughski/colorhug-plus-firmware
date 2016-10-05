@@ -20,6 +20,20 @@
 
 all: bootloader.dfu
 
+#  __________________
+# /                   0000
+# |  Bootloader
+# \__________________ 5bff
+# /                   5c00
+# | Shared Config Space
+# \__________________ 5fff
+# /                   6000
+# |  Saved SRAM
+# \__________________ 7fff
+# /                   8000
+# | User Firmware
+# \__________________ ffff
+
 SRC_H =								\
 	$(top_srcdir)/src/ch-config.h				\
 	$(top_srcdir)/src/ch-errno.h				\
@@ -41,7 +55,7 @@ bootloader_CFLAGS =						\
 	-I$(top_builddir)					\
 	-I$(top_srcdir)/src					\
 	-I$(top_srcdir)/src/m-stack/usb/include			\
-	--rom=0x0000-0x3dff					\
+	--rom=0x0000-0x5bff					\
 	-DCOLORHUG_BOOTLOADER
 bootloader.hex: ${SRC_C} ${SRC_H}
 	$(AM_V_GEN) $(CC) $(bootloader_CFLAGS) ${SRC_C} -o$@
