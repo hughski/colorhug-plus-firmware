@@ -36,6 +36,7 @@
 
 #include "ch-config.h"
 #include "ch-errno.h"
+#include "ch-flash.h"
 
 static CHugConfig		 _cfg;
 static ChError			 _last_error = CH_ERROR_NONE;
@@ -47,6 +48,8 @@ static uint16_t			 _heartbeat_cnt = 0;
 #ifdef HAVE_MCDC04
 MztMcdc04Context		 _mcdc04_ctx;
 #endif
+
+#define CH_SRAM_ADDRESS_WRDS		0x6000
 
 void
 chug_usb_dfu_set_success_callback(void *context)
@@ -387,6 +390,55 @@ chug_handle_take_reading_spectral(const struct setup_packet *setup)
 }
 
 static int8_t
+chug_flash_load_sram(uint16_t addr, uint16_t len)
+{
+	uint16_t i;
+	uint8_t rc;
+	const uint16_t buflen = sizeof(_chug_buf);
+
+	/* copy from EEPROM to SRAM */
+	for (i = 0; i < len; i += buflen) {
+		rc = chug_flash_read(addr + i, _chug_buf, buflen);
+		if (rc != 0) {
+			chug_set_error(CH_CMD_LOAD_SRAM, rc);
+			return -1;
+		}
+		mti_23k640_dma_from_cpu(_chug_buf, i, buflen);
+		mti_23k640_dma_wait();
+	}
+	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+	return 0;
+}
+
+static int8_t
+chug_flash_save_sram (uint16_t addr, uint16_t len)
+{
+	uint16_t i;
+	uint8_t rc;
+	const uint16_t buflen = sizeof(_chug_buf);
+
+	/* clear EEPROM */
+	rc = chug_flash_erase(addr, len);
+	if (rc != 0) {
+		chug_set_error(CH_CMD_SAVE_SRAM, rc);
+		return -1;
+	}
+
+	/* copy from SRAM to EEPROM */
+	for (i = 0; i < len; i += buflen) {
+		mti_23k640_dma_to_cpu(i, _chug_buf, buflen);
+		mti_23k640_dma_wait();
+		rc = chug_flash_write(addr + i, _chug_buf, buflen);
+		if (rc != 0) {
+			chug_set_error(CH_CMD_SAVE_SRAM, rc);
+			return -1;
+		}
+	}
+	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+	return 0;
+}
+
+static int8_t
 chug_handle_take_reading_xyz(const struct setup_packet *setup)
 {
 #ifdef HAVE_MCDC04
@@ -511,6 +563,12 @@ process_chug_setup_request(struct setup_packet *setup)
 		return chug_handle_take_reading_spectral(setup);
 	case CH_CMD_TAKE_READING_XYZ:
 		return chug_handle_take_reading_xyz(setup);
+	case CH_CMD_LOAD_SRAM:
+		/* read the 0x2000 (8k) bytes of shadow memory from eeprom */
+		return chug_flash_load_sram(CH_SRAM_ADDRESS_WRDS, 0x2000);
+	case CH_CMD_SAVE_SRAM:
+		/* write int8_t 0x2000 (8k) bytes of shadow memory to eeprom */
+		return chug_flash_save_sram(CH_SRAM_ADDRESS_WRDS, 0x2000);
 	default:
 		chug_set_error(setup->bRequest, CH_ERROR_UNKNOWN_CMD);
 	}
