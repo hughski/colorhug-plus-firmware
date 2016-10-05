@@ -67,6 +67,8 @@ install-firmware-unsigned: firmware.dfu Makefile
 	sudo ${DFUTOOL} write $< ;
 install-firmware: firmware.xdfu Makefile
 	sudo ${DFUTOOL} write $<
+install-calibration: firmware.xdfu Makefile
+	colorhug-cmd set-ccd-calibration 355 0.37 -0.0000251235 0
 
 CLEANFILES =							\
 	*.as							\
