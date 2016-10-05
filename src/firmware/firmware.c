@@ -263,45 +263,49 @@ static int8_t
 chug_handle_read_sram(const struct setup_packet *setup)
 {
 #ifdef HAVE_SRAM
-	mti_23k640_dma_to_cpu(setup->wValue * CH_EP0_TRANSFER_SIZE,
-			      _chug_buf,
-			      setup->wLength);
+	if (setup->wLength > sizeof(_chug_buf)) {
+		chug_set_error(CH_CMD_READ_SRAM, CH_ERROR_INVALID_LENGTH);
+		return -1;
+	}
+	mti_23k640_dma_to_cpu(setup->wValue, _chug_buf, setup->wLength);
+	mti_23k640_dma_wait();
 #else
 	memset(_chug_buf, 0x00, setup->wLength);
 #endif
-	usb_send_data_stage(_chug_buf, CH_EP0_TRANSFER_SIZE, _send_data_stage_cb, NULL);
+	usb_send_data_stage(_chug_buf, setup->wLength, _send_data_stage_cb, NULL);
 	return 0;
 }
 
 static int8_t
-_recieve_spectrum_cb(bool transfer_ok, void *context)
+_recieve_data_sram_cb(bool transfer_ok, void *context)
 {
+	const struct setup_packet *setup = (const struct setup_packet *) context;
+
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
 		return -1;
 	}
-	return 1;
+#ifdef HAVE_SRAM
+	mti_23k640_dma_from_cpu(_chug_buf, setup->wValue, setup->wLength);
+	mti_23k640_dma_wait();
+#endif
+	return 0;
 }
 
 static int8_t
 chug_handle_write_sram(const struct setup_packet *setup)
 {
 	/* check size */
-	if (setup->wLength != 64) {
+	if (setup->wLength > sizeof(_chug_buf)) {
 		chug_set_error(CH_CMD_WRITE_SRAM, CH_ERROR_INVALID_LENGTH);
 		return -1;
 	}
 
-	/* dark calibration */
-#define CH_SPECTRUM_KIND_DARK_CAL 0x01
-	if (setup->wValue == CH_SPECTRUM_KIND_DARK_CAL) {
-		usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
-						 _recieve_spectrum_cb, NULL);
-		return 0;
-	}
-	chug_set_error(CH_CMD_WRITE_SRAM, CH_ERROR_INVALID_VALUE);
-	return -1;
+	/* receive data */
+	usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
+					 _recieve_data_sram_cb, setup);
+	return 0;
 }
 
 static int8_t
