@@ -192,12 +192,6 @@ main(void)
 	oo_elis1024_set_standby();
 #endif
 
-	//FIXME: new bootloader please..........................................................
-	TRISA = 0b11011101;
-	TRISC = 0b10111000;
-	TRISD = 0b11110100;
-	TRISE = 0b11111000;
-
 	/* ensure both UV and A illuminants turned off */
 	chug_set_illuminants(CH_ILLUMINANT_NONE);
 
