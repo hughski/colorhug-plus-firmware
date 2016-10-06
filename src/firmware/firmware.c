@@ -135,6 +135,66 @@ chug_heatbeat(uint8_t leds)
 		_heartbeat_cnt = 0;
 }
 
+static int8_t
+_send_data_stage_cb(bool transfer_ok, void *context)
+{
+	/* error */
+	if (!transfer_ok) {
+		chug_errno_show(CH_ERROR_INVALID_ADDRESS, FALSE);
+		return -1;
+	}
+	return 0;
+}
+
+static int8_t
+chug_flash_load_sram(uint16_t addr, uint16_t len)
+{
+	uint16_t i;
+	uint8_t rc;
+	const uint16_t buflen = sizeof(_chug_buf);
+
+	/* copy from EEPROM to SRAM */
+	for (i = 0; i < len; i += buflen) {
+		rc = chug_flash_read(addr + i, _chug_buf, buflen);
+		if (rc != 0) {
+			chug_set_error(CH_CMD_LOAD_SRAM, rc);
+			return -1;
+		}
+		mti_23k640_dma_from_cpu(_chug_buf, i, buflen);
+		mti_23k640_dma_wait();
+	}
+	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+	return 0;
+}
+
+static int8_t
+chug_flash_save_sram (uint16_t addr, uint16_t len)
+{
+	uint16_t i;
+	uint8_t rc;
+	const uint16_t buflen = sizeof(_chug_buf);
+
+	/* clear EEPROM */
+	rc = chug_flash_erase(addr, len);
+	if (rc != 0) {
+		chug_set_error(CH_CMD_SAVE_SRAM, rc);
+		return -1;
+	}
+
+	/* copy from SRAM to EEPROM */
+	for (i = 0; i < len; i += buflen) {
+		mti_23k640_dma_to_cpu(i, _chug_buf, buflen);
+		mti_23k640_dma_wait();
+		rc = chug_flash_write(addr + i, _chug_buf, buflen);
+		if (rc != 0) {
+			chug_set_error(CH_CMD_SAVE_SRAM, rc);
+			return -1;
+		}
+	}
+	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
+	return 0;
+}
+
 #define HAVE_TESTS
 
 int
@@ -167,8 +227,8 @@ main(void)
 	DMACON2bits.INTLVL = 0x0;	/* interrupt only when complete */
 	DMACON2bits.DLYCYC = 0x02;	/* minimum delay between bytes */
 
-	/* clear base SRAM memory */
-	mti_23k640_wipe(0x0000, 0x2000);
+	/* populate the SRAM from saved eeprom */
+	chug_flash_load_sram(CH_SRAM_ADDRESS_WRDS, 0x2000);
 #endif
 
 #ifdef HAVE_ELIS1024
@@ -224,17 +284,6 @@ main(void)
 		chug_heatbeat(CH_STATUS_LED_RED);
 	}
 
-	return 0;
-}
-
-static int8_t
-_send_data_stage_cb(bool transfer_ok, void *context)
-{
-	/* error */
-	if (!transfer_ok) {
-		chug_errno_show(CH_ERROR_INVALID_ADDRESS, FALSE);
-		return -1;
-	}
 	return 0;
 }
 
@@ -382,55 +431,6 @@ chug_handle_take_reading_spectral(const struct setup_packet *setup)
 	if (rc != CH_ERROR_NONE) {
 		chug_set_error(CH_CMD_TAKE_READING_SPECTRAL, rc);
 		return -1;
-	}
-	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
-	return 0;
-}
-
-static int8_t
-chug_flash_load_sram(uint16_t addr, uint16_t len)
-{
-	uint16_t i;
-	uint8_t rc;
-	const uint16_t buflen = sizeof(_chug_buf);
-
-	/* copy from EEPROM to SRAM */
-	for (i = 0; i < len; i += buflen) {
-		rc = chug_flash_read(addr + i, _chug_buf, buflen);
-		if (rc != 0) {
-			chug_set_error(CH_CMD_LOAD_SRAM, rc);
-			return -1;
-		}
-		mti_23k640_dma_from_cpu(_chug_buf, i, buflen);
-		mti_23k640_dma_wait();
-	}
-	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
-	return 0;
-}
-
-static int8_t
-chug_flash_save_sram (uint16_t addr, uint16_t len)
-{
-	uint16_t i;
-	uint8_t rc;
-	const uint16_t buflen = sizeof(_chug_buf);
-
-	/* clear EEPROM */
-	rc = chug_flash_erase(addr, len);
-	if (rc != 0) {
-		chug_set_error(CH_CMD_SAVE_SRAM, rc);
-		return -1;
-	}
-
-	/* copy from SRAM to EEPROM */
-	for (i = 0; i < len; i += buflen) {
-		mti_23k640_dma_to_cpu(i, _chug_buf, buflen);
-		mti_23k640_dma_wait();
-		rc = chug_flash_write(addr + i, _chug_buf, buflen);
-		if (rc != 0) {
-			chug_set_error(CH_CMD_SAVE_SRAM, rc);
-			return -1;
-		}
 	}
 	usb_send_data_stage(NULL, 0, _send_data_stage_cb, NULL);
 	return 0;
