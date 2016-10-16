@@ -325,18 +325,19 @@ chug_handle_read_sram(const struct setup_packet *setup)
 	return 0;
 }
 
+static uint16_t _write_sram_addr;
+static uint16_t _write_sram_len;
+
 static int8_t
 _recieve_data_sram_cb(bool transfer_ok, void *context)
 {
-	const struct setup_packet *setup = (const struct setup_packet *) context;
-
 	/* error */
 	if (!transfer_ok) {
 		chug_errno_show(CH_ERROR_DEVICE_DEACTIVATED, FALSE);
 		return -1;
 	}
 #ifdef HAVE_SRAM
-	mti_23k640_dma_from_cpu(_chug_buf, setup->wValue, setup->wLength);
+	mti_23k640_dma_from_cpu(_chug_buf, _write_sram_addr, _write_sram_len);
 	mti_23k640_dma_wait();
 #endif
 	return 0;
@@ -352,8 +353,10 @@ chug_handle_write_sram(const struct setup_packet *setup)
 	}
 
 	/* receive data */
+	_write_sram_addr = setup->wValue;
+	_write_sram_len = setup->wLength;
 	usb_start_receive_ep0_data_stage(_chug_buf, setup->wLength,
-					 _recieve_data_sram_cb, setup);
+					 _recieve_data_sram_cb, NULL);
 	return 0;
 }
 
